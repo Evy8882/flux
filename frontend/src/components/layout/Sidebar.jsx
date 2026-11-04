@@ -1,3 +1,4 @@
+import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -8,20 +9,26 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import logo from "../../assets/logo.png";
 
 const menuItems = [
-  { label: "Início", icon: LayoutDashboard },
-  { label: "Extrato", icon: ArrowLeftRight },
-  { label: "Orçamento", icon: Wallet },
-  { label: "Metas", icon: Target },
-  { label: "Recorrências", icon: Repeat },
+  { label: "Início", path: "/", icon: LayoutDashboard },
+  { label: "Extrato", path: "/extrato", icon: ArrowLeftRight },
+  { label: "Orçamento", path: "/orcamento", icon: Wallet },
+  { label: "Metas", path: "/metas", icon: Target },
+  { label: "Recorrências", path: "/recorrencias", icon: Repeat },
 ];
 
-function Sidebar({ activePage, setActivePage, sidebarOpen, setSidebarOpen }) {
+function Sidebar({ sidebarOpen, setSidebarOpen }) {
   return (
     <aside className={`sidebar ${sidebarOpen ? "" : "collapsed"}`}>
       <div className="brand">
-        <div className="brand-icon">F</div>
+        <img
+          src={logo}
+          alt="Logo"
+          className="logo"
+          style={{ width: '48px', height: '48px', outline: "1px solid #cccc", borderRadius: '10px' }}
+        />
 
         {sidebarOpen && <span>flux</span>}
 
@@ -38,24 +45,24 @@ function Sidebar({ activePage, setActivePage, sidebarOpen, setSidebarOpen }) {
       </span>
 
       <nav>
-        {menuItems.map(({ label, icon: Icon }) => (
-          <button
+        {menuItems.map(({ label, path, icon: Icon }) => (
+          <NavLink
             key={label}
-            className={`nav-item ${activePage === label ? "active" : ""}`}
-            onClick={() => setActivePage(label)}
+            to={path}
+            className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
             title={label}
           >
             <Icon size={20} />
             {sidebarOpen && <span>{label}</span>}
-          </button>
+          </NavLink>
         ))}
       </nav>
 
       <div className="sidebar-bottom">
-        <button className="nav-item">
+        <NavLink to="/configuracoes" className="nav-item">
           <Settings size={20} />
           {sidebarOpen && <span>Configurações</span>}
-        </button>
+        </NavLink>
 
         <div className="profile">
           <div className="avatar">M</div>
