@@ -271,13 +271,6 @@ button {
   margin-bottom: 30px;
 }
 
-.eyebrow {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: #6099f9;
-}
-
 .welcome h1 {
   font-size: 27px;
   margin: 8px 0 5px;
@@ -941,57 +934,77 @@ button {
 }
 
 /* ESTILOS DA TELA DE LOGIN */
-
 .login-container {
   width: 100%;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  background: var(--background);
+  padding: 24px;
+  background: radial-gradient(circle at top center, #152238 0%, var(--background) 70%);
 }
 
 .login-card {
   width: 100%;
   max-width: 440px;
-  padding: 40px 32px;
+  padding: 40px 36px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
-.login-brand {
+.auth-brand-wrapper {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 14px;
   margin-bottom: 28px;
-  font-size: 22px;
+}
+
+.auth-logo-badge {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(67, 133, 245, 0.15), rgba(36, 89, 201, 0.05));
+  border: 1px solid rgba(67, 133, 245, 0.3);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 12px rgba(67, 133, 245, 0.1);
+}
+
+.auth-logo-badge img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.auth-brand-name {
+  font-size: 24px;
   font-weight: 800;
-  letter-spacing: -1px;
+  letter-spacing: -0.8px;
+  color: var(--text-h, #ffffff);
 }
 
 .login-header {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .login-header h1 {
-  font-size: 24px;
+  font-size: 22px;
   margin: 6px 0 6px;
-  letter-spacing: -0.6px;
+  letter-spacing: -0.5px;
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   align-items: flex-start;
   gap: 8px;
   width: 100%;
@@ -1004,22 +1017,23 @@ button {
 }
 
 .login-input-wrapper {
-  height: 44px;
+  height: 46px;
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 0 14px;
+  gap: 12px;
+  padding: 0 16px;
   color: var(--muted);
-  background: #0e131c;
+  background: #080c14;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  transition: .2s;
+  border-radius: 10px;
+  transition: all 0.2s ease;
   width: 100%;
 }
 
 .login-input-wrapper:focus-within {
   border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(67, 133, 245, 0.15);
+  background: #0b1019;
+  box-shadow: 0 0 0 4px rgba(67, 133, 245, 0.12);
 }
 
 .login-input-wrapper input {
@@ -1041,7 +1055,7 @@ button {
   align-items: center;
   justify-content: space-between;
   font-size: 12px;
-  margin: 2px 0;
+  margin: 4px 0;
 }
 
 .remember-me {
@@ -1054,14 +1068,16 @@ button {
 
 .remember-me input[type="checkbox"] {
   accent-color: var(--blue);
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
   cursor: pointer;
 }
 
 .forgot-password {
   color: #6da3ff;
   text-decoration: none;
+  font-weight: 500;
 }
 
 .forgot-password:hover {
@@ -1070,10 +1086,11 @@ button {
 
 .login-button {
   width: 100%;
-  height: 44px;
+  height: 46px;
   justify-content: center;
   font-size: 13px;
-  margin-top: 6px;
+  margin-top: 8px;
+  border-radius: 10px;
 }
 
 .login-footer {

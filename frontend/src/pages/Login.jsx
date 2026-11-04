@@ -21,13 +21,14 @@ function Login({ onLogin }) {
   return (
     <div className="login-container">
       <div className="login-card panel">
-        <div className="login-brand">
-          <img src={logo} alt="Logo" className="logo" style={{ width: '48px', height: '48px' }} />
-          <span>Flux</span>
+        <div className="auth-brand-wrapper">
+          <div className="auth-logo-badge">
+            <img src={logo} alt="Flux Logo" />
+          </div>
+          <span className="auth-brand-name">Flux</span>
         </div>
 
         <div className="login-header">
-          <span className="eyebrow">ACESSO AO SISTEMA</span>
           <h1>Bem-vindo de volta</h1>
           <p>Entre com suas credenciais para gerenciar suas finanças.</p>
         </div>

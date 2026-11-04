@@ -21,15 +21,17 @@ function Register({ onLogin }) {
   return (
     <div className="login-container">
       <div className="login-card panel">
-        <div className="login-brand">
-          <img src={logo} alt="Logo" className="logo" style={{ width: '48px', height: '48px' }} />
-          <span>Flux</span>
+        {/* Logo reestruturada com destaque profissional */}
+        <div className="auth-brand-wrapper">
+          <div className="auth-logo-badge">
+            <img src={logo} alt="Flux Logo" />
+          </div>
+          <span className="auth-brand-name">Flux</span>
         </div>
 
         <div className="login-header">
-          <span className="eyebrow">CADASTRO</span>
           <h1>Crie sua conta</h1>
-          <p>Preencha os dados abaixo para criar sua conta.</p>
+          <p>Preencha os dados abaixo para iniciar sua jornada.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
