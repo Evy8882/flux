@@ -34,11 +34,11 @@ function Login({ onLogin }) {
       localStorage.setItem("user", JSON.stringify(data.user));
 
       setIsLoading(false);
-      
+
       if (onLogin) {
         onLogin(data.user);
       }
-      
+
       navigate("/");
     } catch (err) {
       setIsLoading(false);
@@ -112,7 +112,7 @@ function Login({ onLogin }) {
 
         <div className="login-footer">
           <p>
-            Não tiene uma conta?{" "}
+            Não tem uma conta?{" "}
             <Link to="/register">Criar conta gratuita</Link>
           </p>
         </div>
