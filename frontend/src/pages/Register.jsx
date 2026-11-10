@@ -1,27 +1,55 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, ArrowRight, WalletCards } from "lucide-react";
 import logo from "../assets/logo.png";
 
 function Register({ onLogin }) {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     setIsLoading(true);
+    setError("");
 
-    setTimeout(() => {  
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erro ao criar conta.");
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
       setIsLoading(false);
-      if (onLogin) onLogin({ email });
-    }, 800);
+
+      if (onLogin) {
+        onLogin(data.user);
+      }
+
+      navigate("/");
+    } catch (err) {
+      setIsLoading(false);
+      setError(err.message);
+    }
   }
 
   return (
     <div className="login-container">
       <div className="login-card panel">
-        {/* Logo reestruturada com destaque profissional */}
         <div className="auth-brand-wrapper">
           <div className="auth-logo-badge">
             <img src={logo} alt="Flux Logo" />
@@ -34,6 +62,8 @@ function Register({ onLogin }) {
           <p>Preencha os dados abaixo para iniciar sua jornada.</p>
         </div>
 
+        {error && <div className="error-message" style={{ color: "red", marginBottom: "1rem", fontSize: "0.9rem" }}>{error}</div>}
+
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
             <label htmlFor="name">Nome</label>
@@ -43,6 +73,8 @@ function Register({ onLogin }) {
                 id="name"
                 type="text"
                 placeholder="Seu nome"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
                 required
               />
             </div>
