@@ -1,21 +1,49 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import logo from "../assets/logo.png";
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     setIsLoading(true);
+    setError("");
 
-    setTimeout(() => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erro ao fazer login.");
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
       setIsLoading(false);
-      if (onLogin) onLogin({ email });
-    }, 800);
+
+      if (onLogin) {
+        onLogin(data.user);
+      }
+
+      navigate("/");
+    } catch (err) {
+      setIsLoading(false);
+      setError(err.message);
+    }
   }
 
   return (
@@ -32,6 +60,8 @@ function Login({ onLogin }) {
           <h1>Bem-vindo de volta</h1>
           <p>Entre com suas credenciais para gerenciar suas finanças.</p>
         </div>
+
+        {error && <div className="error-message" style={{ color: "red", marginBottom: "1rem", fontSize: "0.9rem" }}>{error}</div>}
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
