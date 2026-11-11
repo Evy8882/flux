@@ -1,0 +1,450 @@
+
+/* ================================
+   ESTRUTURA GERAL
+================================ */
+
+.dashboard {
+  width: 100%;
+  min-width: 0;
+}
+
+.welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  color: #6da3ff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.welcome h1 {
+  color: var(--text);
+  font-size: 26px;
+  margin: 7px 0;
+}
+
+.welcome p {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.month-select {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 13px;
+  outline: none;
+}
+
+/* ================================
+   RESUMO FINANCEIRO
+================================ */
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: 17px;
+  width: 100%;
+  margin-bottom: 22px;
+}
+
+.summary-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+  min-height: 145px;
+  min-width: 0;
+}
+
+.summary-card > span {
+  color: #9aa8bc;
+  font-size: 12px;
+}
+
+.balance-card {
+  background: linear-gradient(120deg, #18396c, #142746);
+  border-color: #254b7e;
+}
+
+.balance-card > span {
+  color: #c0d5f7;
+}
+
+.balance-value {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 13px 0 8px;
+  letter-spacing: -0.8px;
+}
+
+.card-decoration {
+  position: absolute;
+  right: 15px;
+  bottom: -24px;
+  font-size: 105px;
+  font-weight: 800;
+  color: #fff;
+  opacity: 0.035;
+  pointer-events: none;
+}
+
+.card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-heading span {
+  color: #9aa8bc;
+  font-size: 12px;
+}
+
+.metric-icon {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+}
+
+.metric-icon.income {
+  color: var(--green);
+  background: #17382f;
+}
+
+.metric-icon.expense {
+  color: var(--red);
+  background: #3b252d;
+}
+
+.metric-value {
+  font-size: 23px;
+  font-weight: 700;
+  margin: 13px 0 8px;
+}
+
+.positive {
+  color: var(--green);
+  font-size: 11px;
+}
+
+.negative {
+  color: var(--red);
+  font-size: 11px;
+}
+
+/* ================================
+   GRÁFICO FINANCEIRO
+================================ */
+
+.dashboard-chart {
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 20px;
+}
+
+.dashboard-chart > * {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ================================
+   CATEGORIAS E TRANSAÇÕES
+================================ */
+
+.dashboard-bottom {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 20px;
+  width: 100%;
+  align-items: start;
+}
+
+.dashboard-categories,
+.dashboard-transactions {
+  min-width: 0;
+  width: 100%;
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 23px;
+}
+
+.category-info {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11px;
+  margin-bottom: 10px;
+}
+
+.category-info strong {
+  margin-left: auto;
+  font-size: 11px;
+}
+
+.food {
+  background: #4385f5;
+}
+
+.transport {
+  background: #9271df;
+}
+
+.home {
+  background: #36c98f;
+}
+
+.other {
+  background: #e6a653;
+}
+
+.progress-track {
+  width: 100%;
+  height: 5px;
+  border-radius: 10px;
+  background: #252e3d;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 10px;
+}
+
+.progress-fill.food {
+  background: #4385f5;
+}
+
+.progress-fill.transport {
+  background: #9271df;
+}
+
+.progress-fill.home {
+  background: #36c98f;
+}
+
+.progress-fill.other {
+  background: #e6a653;
+}
+
+/* ================================
+   TRANSAÇÕES RECENTES
+================================ */
+
+.transactions-panel {
+  margin-bottom: 30px;
+}
+
+.text-button {
+  color: #6da3ff;
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.text-button:hover {
+  color: white;
+}
+
+.transaction-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.transaction-row {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+}
+
+.transaction-icon {
+  width: 37px;
+  height: 37px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.transaction-icon.income {
+  color: var(--green);
+  background: #17382f;
+}
+
+.transaction-icon.expense {
+  color: var(--red);
+  background: #3b252d;
+}
+
+.transaction-description {
+  flex: 1;
+  min-width: 0;
+}
+
+.transaction-description strong {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.transaction-description small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.transaction-row > strong {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ================================
+   RESPONSIVIDADE
+================================ */
+
+@media (max-width: 1050px) {
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .balance-card {
+    grid-column: span 2;
+  }
+
+  .dashboard-bottom {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .welcome {
+    align-items: flex-start;
+    gap: 15px;
+    flex-direction: column;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .balance-card {
+    grid-column: auto;
+  }
+
+  .metric-value {
+    font-size: 21px;
+  }
+}
+
+
+/* ================================
+   GRÁFICO FINANCEIRO
+================================ */
+
+.chart-panel {
+  width: 100%;
+  min-width: 0;
+}
+
+.chart-placeholder {
+  width: 100%;
+  height: 245px;
+  display: flex;
+  flex-direction: column;
+  padding-top: 15px;
+}
+
+.chart-bars {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 0 8px;
+}
+
+.bar-group {
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+}
+
+.bar {
+  width: 100%;
+  max-width: 20px;
+  border-radius: 5px 5px 2px 2px;
+  transition: height 0.3s ease;
+}
+
+.income-bar {
+  background: #4385f5;
+}
+
+.expense-bar {
+  background: #9271df;
+}
+
+.chart-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 25px;
+  padding-top: 18px;
+}
+
+.chart-legend span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.blue-dot {
+  background: #4385f5;
+}
+
+.purple-dot {
+  background: #9271df;
+}
+
+@media (max-width: 650px) {
+  .chart-placeholder {
+    height: 210px;
+  }
+
+  .chart-bars {
+    gap: 5px;
+    padding: 0 2px;
+  }
+
+  .chart-legend {
+    gap: 16px;
+  }
+}

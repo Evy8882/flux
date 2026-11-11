@@ -1,4 +1,4 @@
-
+import "../pages/Statement.css";
 import { useMemo, useState } from "react";
 import {
   Search,

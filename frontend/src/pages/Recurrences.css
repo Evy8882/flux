@@ -1,0 +1,539 @@
+
+/* =================================
+   PÁGINA DE RECORRÊNCIAS
+================================= */
+
+.recurrences-page {
+  width: 100%;
+  min-width: 0;
+}
+
+.recurrences-page .welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.recurrences-page .welcome h1 {
+  margin: 7px 0;
+  font-size: 26px;
+  color: var(--text);
+}
+
+.recurrences-page .welcome p {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* =================================
+   BOTÃO PRINCIPAL
+================================= */
+
+.recurrences-page .primary-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 11px 16px;
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+
+.recurrences-page .primary-button:hover {
+  background: #3274df;
+}
+
+/* =================================
+   CARDS DE RESUMO
+================================= */
+
+.recurrences-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 17px;
+  margin-bottom: 22px;
+}
+
+.recurrence-summary-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 21px;
+  gap: 12px;
+}
+
+.recurrence-summary-icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+}
+
+.recurrence-summary-icon.blue {
+  color: #6da3ff;
+  background: #1b3152;
+}
+
+.recurrence-summary-icon.green {
+  color: var(--green);
+  background: #17382f;
+}
+
+.recurrence-summary-icon.red {
+  color: var(--red);
+  background: #3b252d;
+}
+
+.recurrence-summary-card > span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.recurrence-summary-card > strong {
+  color: var(--text);
+  font-size: 23px;
+  font-weight: 700;
+}
+
+.recurrence-summary-card > strong.positive {
+  color: var(--green);
+}
+
+.recurrence-summary-card > strong.negative {
+  color: var(--red);
+}
+
+/* =================================
+   PAINEL PRINCIPAL
+================================= */
+
+.recurrences-panel {
+  width: 100%;
+  min-width: 0;
+}
+
+.recurrences-panel .panel-heading {
+  margin-bottom: 18px;
+}
+
+.recurrences-panel .panel-heading h2 {
+  color: var(--text);
+  font-size: 15px;
+}
+
+.recurrences-panel .panel-heading p {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 5px;
+}
+
+/* =================================
+   ESTADO VAZIO
+================================= */
+
+.recurrences-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 240px;
+  padding: 30px 20px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.recurrences-empty svg {
+  color: #53647c;
+  margin-bottom: 5px;
+}
+
+.recurrences-empty strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.recurrences-empty p {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* =================================
+   LISTA DE RECORRÊNCIAS
+================================= */
+
+.recurrences-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.recurrence-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 17px 5px;
+  border-top: 1px solid var(--border);
+  transition: background 0.2s ease;
+}
+
+.recurrence-item:hover {
+  background: #ffffff05;
+}
+
+.recurrence-item-info {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  flex: 1;
+  min-width: 0;
+}
+
+.recurrence-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+}
+
+.recurrence-icon.income {
+  color: var(--green);
+  background: #17382f;
+}
+
+.recurrence-icon.expense {
+  color: var(--red);
+  background: #3b252d;
+}
+
+.recurrence-item-info > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.recurrence-item-info strong {
+  color: var(--text);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.recurrence-item-info small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.recurrence-item-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  min-width: 125px;
+}
+
+.recurrence-item-details > strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.recurrence-item-details .positive {
+  color: var(--green);
+}
+
+.recurrence-item-details .negative {
+  color: var(--red);
+}
+
+.recurrence-item-details span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+/* =================================
+   BOTÕES DE AÇÃO
+================================= */
+
+.recurrence-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recurrence-action {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #151c28;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recurrence-action.edit:hover {
+  color: #6da3ff;
+  background: #1b3152;
+  border-color: #315b91;
+}
+
+.recurrence-action.delete:hover {
+  color: var(--red);
+  background: #3b252d;
+  border-color: #71404a;
+}
+
+/* =================================
+   MODAL
+================================= */
+
+.recurrences-page .modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: #000000a6;
+  backdrop-filter: blur(4px);
+}
+
+.recurrences-page .transaction-modal {
+  width: 100%;
+  max-width: 470px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 25px;
+  background: #111722;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 20px 60px #00000055;
+}
+
+.recurrences-page .modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 23px;
+}
+
+.recurrences-page .modal-header h2 {
+  color: var(--text);
+  font-size: 18px;
+  margin-bottom: 7px;
+}
+
+.recurrences-page .modal-header p {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.recurrences-page .modal-close {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.recurrences-page .modal-close:hover {
+  color: white;
+  background: var(--surface-hover);
+}
+
+/* FORMULÁRIO */
+
+.recurrences-page .transaction-modal form {
+  display: flex;
+  flex-direction: column;
+}
+
+.recurrences-page .transaction-modal label {
+  color: #b9c5d6;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.recurrences-page .transaction-modal input,
+.recurrences-page .transaction-modal select {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  margin-bottom: 17px;
+  color: var(--text);
+  background: #0b1018;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  font-size: 12px;
+  color-scheme: dark;
+}
+
+.recurrences-page .transaction-modal input:focus,
+.recurrences-page .transaction-modal select:focus {
+  border-color: var(--blue);
+}
+
+.recurrences-page .transaction-modal input::placeholder {
+  color: #65738a;
+}
+
+/* TIPO DE LANÇAMENTO */
+
+.recurrences-page .transaction-type-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.recurrences-page .transaction-type-selector button {
+  height: 39px;
+  color: var(--muted);
+  background: #0b1018;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recurrences-page .transaction-type-selector button.selected.expense {
+  color: var(--red);
+  background: #3b252d;
+  border-color: #71404a;
+}
+
+.recurrences-page .transaction-type-selector button.selected.income {
+  color: var(--green);
+  background: #17382f;
+  border-color: #28644e;
+}
+
+/* AÇÕES DO MODAL */
+
+.recurrences-page .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.recurrences-page .modal-actions button {
+  min-height: 39px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.recurrences-page .cancel-button {
+  color: #aab6c8;
+  background: #182130;
+  border: 1px solid var(--border);
+}
+
+.recurrences-page .cancel-button:hover {
+  background: #222e40;
+}
+
+.recurrences-page .save-button {
+  color: white;
+  background: var(--blue);
+  border: 1px solid var(--blue);
+}
+
+.recurrences-page .save-button:hover {
+  background: #3274df;
+}
+
+/* =================================
+   RESPONSIVIDADE
+================================= */
+
+@media (max-width: 900px) {
+  .recurrences-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .recurrence-item {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 650px) {
+  .recurrences-page .welcome {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .recurrences-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .recurrence-item {
+    flex-wrap: wrap;
+    padding: 16px 2px;
+  }
+
+  .recurrence-item-info {
+    flex-basis: 100%;
+  }
+
+  .recurrence-item-details {
+    align-items: flex-start;
+    flex: 1;
+    padding-left: 55px;
+  }
+
+  .recurrence-actions {
+    margin-left: auto;
+  }
+
+  .recurrences-page .transaction-modal {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 380px) {
+  .recurrence-item-details {
+    padding-left: 0;
+  }
+
+  .recurrences-page .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .recurrences-page .modal-actions button {
+    width: 100%;
+  }
+}

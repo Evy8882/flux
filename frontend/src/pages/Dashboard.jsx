@@ -1,8 +1,12 @@
+
 import { TrendingUp, TrendingDown } from "lucide-react";
+
 import SummaryCard from "../components/dashboard/SummaryCard";
 import FinancialChart from "../components/dashboard/FinancialChart";
 import CategoryExpenses from "../components/dashboard/CategoryExpenses";
 import RecentTransactions from "../components/dashboard/RecentTransactions";
+
+import "./Dashboard.css";
 
 function Dashboard({ transactions, onViewAll }) {
   const income = transactions
@@ -23,8 +27,8 @@ function Dashboard({ transactions, onViewAll }) {
   }
 
   return (
-    <>
-      <div className="welcome">
+    <main className="dashboard">
+      <header className="welcome">
         <div>
           <span className="eyebrow">VISÃO GERAL</span>
           <h1>Olá! 👋</h1>
@@ -36,9 +40,9 @@ function Dashboard({ transactions, onViewAll }) {
           <option>Setembro 2026</option>
           <option>Agosto 2026</option>
         </select>
-      </div>
+      </header>
 
-      <div className="summary-grid">
+      <section className="summary-grid">
         <SummaryCard
           title="Saldo total"
           value={formatCurrency(balance)}
@@ -61,18 +65,25 @@ function Dashboard({ transactions, onViewAll }) {
           icon={TrendingDown}
           type="expense"
         />
-      </div>
+      </section>
 
-      <div className="dashboard-grid">
+      <section className="dashboard-chart">
         <FinancialChart />
-        <CategoryExpenses />
-      </div>
+      </section>
 
-      <RecentTransactions
-        transactions={transactions}
-        onViewAll={onViewAll}
-      />
-    </>
+      <section className="dashboard-bottom">
+        <div className="dashboard-categories">
+          <CategoryExpenses />
+        </div>
+
+        <div className="dashboard-transactions">
+          <RecentTransactions
+            transactions={transactions}
+            onViewAll={onViewAll}
+          />
+        </div>
+      </section>
+    </main>
   );
 }
 
