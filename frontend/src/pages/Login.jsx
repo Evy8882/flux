@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, ArrowRight } from "lucide-react";
+import { Mail, Lock, ArrowRight, UserRound } from "lucide-react";
 import logo from "../assets/logo.png";
 
 function Login({ onLogin }) {
@@ -33,17 +34,27 @@ function Login({ onLogin }) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      setIsLoading(false);
-
       if (onLogin) {
         onLogin(data.user);
       }
 
       navigate("/");
     } catch (err) {
-      setIsLoading(false);
       setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
+  }
+
+  function handleGuestAccess() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    if (onLogin) {
+      onLogin(null);
+    }
+
+    navigate("/");
   }
 
   return (
@@ -61,7 +72,14 @@ function Login({ onLogin }) {
           <p>Entre com suas credenciais para gerenciar suas finanças.</p>
         </div>
 
-        {error && <div className="error-message" style={{ color: "red", marginBottom: "1rem", fontSize: "0.9rem" }}>{error}</div>}
+        {error && (
+          <div
+            className="error-message"
+            style={{ color: "red", marginBottom: "1rem", fontSize: "0.9rem" }}
+          >
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
@@ -99,16 +117,38 @@ function Login({ onLogin }) {
               <input type="checkbox" />
               <span>Lembrar de mim</span>
             </label>
-            <a href="#forgot" onClick={(e) => e.preventDefault()} className="forgot-password">
+
+            <a
+              href="#forgot"
+              onClick={(e) => e.preventDefault()}
+              className="forgot-password"
+            >
               Esqueceu a senha?
             </a>
           </div>
 
-          <button type="submit" className="primary-button login-button" disabled={isLoading}>
+          <button
+            type="submit"
+            className="primary-button login-button"
+            disabled={isLoading}
+          >
             {isLoading ? "Entrando..." : "Entrar na conta"}
             {!isLoading && <ArrowRight size={16} />}
           </button>
         </form>
+
+        <div className="login-divider">
+          <span>ou</span>
+        </div>
+
+        <button
+          type="button"
+          className="guest-button"
+          onClick={handleGuestAccess}
+        >
+          <UserRound size={17} />
+          Continuar sem login
+        </button>
 
         <div className="login-footer">
           <p>

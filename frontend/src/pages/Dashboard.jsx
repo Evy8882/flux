@@ -1,6 +1,8 @@
-
-import { TrendingUp, TrendingDown } from "lucide-react";
-
+import {
+  TrendingUp,
+  TrendingDown,
+  CalendarDays,
+} from "lucide-react";
 import SummaryCard from "../components/dashboard/SummaryCard";
 import FinancialChart from "../components/dashboard/FinancialChart";
 import CategoryExpenses from "../components/dashboard/CategoryExpenses";
@@ -28,20 +30,6 @@ function Dashboard({ transactions, onViewAll }) {
 
   return (
     <main className="dashboard">
-      <header className="welcome">
-        <div>
-          <span className="eyebrow">VISÃO GERAL</span>
-          <h1>Olá! 👋</h1>
-          <p>Acompanhe sua vida financeira em um só lugar.</p>
-        </div>
-
-        <select className="month-select" defaultValue="Outubro 2026">
-          <option>Outubro 2026</option>
-          <option>Setembro 2026</option>
-          <option>Agosto 2026</option>
-        </select>
-      </header>
-
       <section className="summary-grid">
         <SummaryCard
           title="Saldo total"

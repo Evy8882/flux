@@ -48,14 +48,6 @@ function Statement({ transactions }) {
 
   return (
     <div className="statement-page">
-      <div className="welcome">
-        <div>
-          <span className="eyebrow">MOVIMENTAÇÕES</span>
-          <h1>Extrato</h1>
-          <p>Acompanhe todas as suas receitas e despesas.</p>
-        </div>
-      </div>
-
       <div className="statement-summary">
         <article className="panel statement-card">
           <div className="statement-card-icon income">

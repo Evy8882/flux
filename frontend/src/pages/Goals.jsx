@@ -109,12 +109,6 @@ function Goals() {
   return (
     <div className="goals-page">
       <div className="welcome">
-        <div>
-          <span className="eyebrow">PLANEJAMENTO FINANCEIRO</span>
-          <h1>Metas</h1>
-          <p>Defina objetivos e acompanhe suas conquistas.</p>
-        </div>
-
         <button className="primary-button" onClick={() => openModal()}>
           <Plus size={17} />
           Nova meta

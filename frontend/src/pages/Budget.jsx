@@ -119,12 +119,6 @@ function Budget({ transactions }) {
   return (
     <div className="budget-page">
       <div className="welcome">
-        <div>
-          <span className="eyebrow">CONTROLE FINANCEIRO</span>
-          <h1>Orçamento</h1>
-          <p>Defina limites e acompanhe seus gastos mensais.</p>
-        </div>
-
         <button
           className="primary-button"
           onClick={() => openBudgetModal()}

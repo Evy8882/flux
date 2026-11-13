@@ -1,3 +1,4 @@
+import "./Settings.css";
 import { useEffect, useState } from "react";
 import {
     UserRound,
@@ -73,13 +74,6 @@ function Settings() {
 
     return (
         <div className="settings-page">
-            <div className="welcome">
-                <div>
-                    <span className="eyebrow">PERSONALIZAÇÃO</span>
-                    <h1>Configurações</h1>
-                    <p>Gerencie suas informações e preferências do Flux.</p>
-                </div>
-            </div>
 
             <section className="panel settings-panel">
                 <div className="settings-section-heading">

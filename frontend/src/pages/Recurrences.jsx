@@ -144,12 +144,6 @@ function Recurrences() {
   return (
     <div className="recurrences-page">
       <div className="welcome">
-        <div>
-          <span className="eyebrow">CONTROLE AUTOMÁTICO</span>
-          <h1>Recorrências</h1>
-          <p>Organize suas receitas e despesas periódicas.</p>
-        </div>
-
         <button
           className="primary-button"
           onClick={() => openModal()}

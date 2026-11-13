@@ -70,14 +70,15 @@ button {
 .main {
   flex: 1;
   min-width: 0;
-  width: calc(100% - 260px);
+  width: 0;
 }
 
 .content {
   width: 100%;
   max-width: none;
+  min-width: 0;
   margin: 0;
-  padding: 32px 30px;
+  padding: 32px 38px;
 }
 
 /* =================================
@@ -851,10 +852,9 @@ button {
 /* =================================
    RESPONSIVIDADE GLOBAL
 ================================= */
-
 @media (max-width: 1050px) {
   .content {
-    padding: 25px 20px;
+    padding: 25px 24px;
   }
 
   .topbar {
@@ -863,85 +863,11 @@ button {
 }
 
 @media (max-width: 650px) {
-  .sidebar {
-    width: 70px;
-    padding: 20px 10px;
-  }
-
-  .sidebar:not(.collapsed) {
-    width: 70px;
-  }
-
-  .sidebar .brand {
-    padding: 0;
-    justify-content: center;
-    margin-bottom: 35px;
-  }
-
-  .sidebar .brand > span,
-  .sidebar .sidebar-toggle,
-  .sidebar .menu-label,
-  .sidebar .nav-item span,
-  .sidebar .profile > div:not(.avatar),
-  .sidebar .profile-settings-icon,
-  .sidebar .profile-chevron {
-    display: none;
-  }
-
-  .sidebar .nav-item {
-    justify-content: center;
-    padding: 0;
-  }
-
-  .sidebar .profile {
-    justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .main {
-    width: calc(100% - 70px);
-  }
-
   .content {
-    padding: 25px 15px;
+    padding: 20px 14px;
   }
 
   .topbar {
     padding: 0 15px;
-  }
-
-  .top-actions {
-    gap: 7px;
-  }
-
-  .top-actions .icon-button:first-child,
-  .top-actions .icon-button:nth-child(2) {
-    display: none;
-  }
-
-  .primary-button {
-    padding: 0 10px;
-    font-size: 10px;
-  }
-
-  .welcome {
-    align-items: flex-start;
-    gap: 15px;
-    flex-direction: column;
-  }
-
-  .panel {
-    padding: 17px;
-  }
-
-  .login-card {
-    padding: 24px 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .transaction-modal {
-    padding: 20px;
   }
 }
