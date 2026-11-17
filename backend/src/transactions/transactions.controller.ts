@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { Types } from "mongoose";
-import { TransactionModel } from "../db/models.js";
-import type { TransactionType } from "../db/models.js";
+import { TransacaoModel } from "../db/models.js";
+import type { TipoTransacao } from "../db/models.js";
 
 // ─── GET /api/transactions ────────────────────────────────────────────────────
 // Query params opcionais: mes, ano, tipo
@@ -15,7 +15,7 @@ export async function listTransactions(req: Request, res: Response): Promise<voi
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const filter: Record<string, any> = { userId };
+  const filter: Record<string, any> = { usuarioId: new Types.ObjectId(userId) };
 
   if (mes || ano) {
     const year = ano ? parseInt(ano, 10) : new Date().getFullYear();
@@ -23,29 +23,29 @@ export async function listTransactions(req: Request, res: Response): Promise<voi
       const month = parseInt(mes, 10);
       const start = new Date(Date.UTC(year, month - 1, 1));
       const end = new Date(Date.UTC(year, month, 1));
-      filter["date"] = { $gte: start, $lt: end };
+      filter["data"] = { $gte: start, $lt: end };
     } else {
       const start = new Date(Date.UTC(year, 0, 1));
       const end = new Date(Date.UTC(year + 1, 0, 1));
-      filter["date"] = { $gte: start, $lt: end };
+      filter["data"] = { $gte: start, $lt: end };
     }
   }
 
   if (tipo === "receita" || tipo === "despesa") {
-    filter["type"] = tipo;
+    filter["tipo"] = tipo;
   }
 
-  const transactions = await TransactionModel.find(filter).sort({ date: -1 });
+  const transactions = await TransacaoModel.find(filter).sort({ data: -1 });
 
   res.json(
     transactions.map((t) => ({
       id: t._id.toString(),
-      userId: t.userId.toString(),
-      categoryId: t.categoryId.toString(),
-      type: t.type,
-      amount: t.amount,
-      description: t.description,
-      date: t.date,
+      userId: t.usuarioId.toString(),
+      categoryId: t.categoriaId.toString(),
+      type: t.tipo,
+      amount: t.valor,
+      description: t.descricao,
+      date: t.data,
       createdAt: t.createdAt,
     }))
   );
@@ -57,7 +57,7 @@ export async function createTransaction(req: Request, res: Response): Promise<vo
   const { userId } = req.user!;
   const { categoryId, type, amount, description, date } = req.body as {
     categoryId?: string;
-    type?: TransactionType;
+    type?: TipoTransacao;
     amount?: number;
     description?: string;
     date?: string;
@@ -86,23 +86,23 @@ export async function createTransaction(req: Request, res: Response): Promise<vo
     return;
   }
 
-  const transaction = await TransactionModel.create({
-    userId: new Types.ObjectId(userId),
-    categoryId: new Types.ObjectId(categoryId),
-    type,
-    amount,
-    description,
-    date: new Date(date),
+  const transaction = await TransacaoModel.create({
+    usuarioId: new Types.ObjectId(userId),
+    categoriaId: new Types.ObjectId(categoryId),
+    tipo: type,
+    valor: amount,
+    descricao: description,
+    data: new Date(date),
   });
 
   res.status(201).json({
     id: transaction._id.toString(),
-    userId: transaction.userId.toString(),
-    categoryId: transaction.categoryId.toString(),
-    type: transaction.type,
-    amount: transaction.amount,
-    description: transaction.description,
-    date: transaction.date,
+    userId: transaction.usuarioId.toString(),
+    categoryId: transaction.categoriaId.toString(),
+    type: transaction.tipo,
+    amount: transaction.valor,
+    description: transaction.descricao,
+    date: transaction.data,
     createdAt: transaction.createdAt,
   });
 }
@@ -118,7 +118,10 @@ export async function getTransaction(req: Request, res: Response): Promise<void>
     return;
   }
 
-  const transaction = await TransactionModel.findOne({ _id: id, userId });
+  const transaction = await TransacaoModel.findOne({
+    _id: id,
+    usuarioId: new Types.ObjectId(userId),
+  });
 
   if (!transaction) {
     res.status(404).json({ error: "Transação não encontrada." });
@@ -127,12 +130,12 @@ export async function getTransaction(req: Request, res: Response): Promise<void>
 
   res.json({
     id: transaction._id.toString(),
-    userId: transaction.userId.toString(),
-    categoryId: transaction.categoryId.toString(),
-    type: transaction.type,
-    amount: transaction.amount,
-    description: transaction.description,
-    date: transaction.date,
+    userId: transaction.usuarioId.toString(),
+    categoryId: transaction.categoriaId.toString(),
+    type: transaction.tipo,
+    amount: transaction.valor,
+    description: transaction.descricao,
+    date: transaction.data,
     createdAt: transaction.createdAt,
   });
 }
@@ -144,7 +147,7 @@ export async function updateTransaction(req: Request, res: Response): Promise<vo
   const { id } = req.params as { id: string };
   const { categoryId, type, amount, description, date } = req.body as {
     categoryId?: string;
-    type?: TransactionType;
+    type?: TipoTransacao;
     amount?: number;
     description?: string;
     date?: string;
@@ -167,14 +170,14 @@ export async function updateTransaction(req: Request, res: Response): Promise<vo
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const patch: Record<string, any> = {};
-  if (categoryId) patch["categoryId"] = new Types.ObjectId(categoryId);
-  if (type) patch["type"] = type;
-  if (amount !== undefined) patch["amount"] = amount;
-  if (description) patch["description"] = description;
-  if (date) patch["date"] = new Date(date);
+  if (categoryId) patch["categoriaId"] = new Types.ObjectId(categoryId);
+  if (type) patch["tipo"] = type;
+  if (amount !== undefined) patch["valor"] = amount;
+  if (description) patch["descricao"] = description;
+  if (date) patch["data"] = new Date(date);
 
-  const updated = await TransactionModel.findOneAndUpdate(
-    { _id: id, userId },
+  const updated = await TransacaoModel.findOneAndUpdate(
+    { _id: id, usuarioId: new Types.ObjectId(userId) },
     patch,
     { new: true }
   );
@@ -186,12 +189,12 @@ export async function updateTransaction(req: Request, res: Response): Promise<vo
 
   res.json({
     id: updated._id.toString(),
-    userId: updated.userId.toString(),
-    categoryId: updated.categoryId.toString(),
-    type: updated.type,
-    amount: updated.amount,
-    description: updated.description,
-    date: updated.date,
+    userId: updated.usuarioId.toString(),
+    categoryId: updated.categoriaId.toString(),
+    type: updated.tipo,
+    amount: updated.valor,
+    description: updated.descricao,
+    date: updated.data,
     createdAt: updated.createdAt,
   });
 }
@@ -207,7 +210,10 @@ export async function deleteTransaction(req: Request, res: Response): Promise<vo
     return;
   }
 
-  const result = await TransactionModel.deleteOne({ _id: id, userId });
+  const result = await TransacaoModel.deleteOne({
+    _id: id,
+    usuarioId: new Types.ObjectId(userId),
+  });
 
   if (result.deletedCount === 0) {
     res.status(404).json({ error: "Transação não encontrada." });

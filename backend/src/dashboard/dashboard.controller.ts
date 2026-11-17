@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
-import { TransactionModel, CategoryModel } from "../db/models.js";
+import { Types } from "mongoose";
+import { TransacaoModel, CategoriaModel } from "../db/models.js";
 
 // ─── GET /api/dashboard/summary ───────────────────────────────────────────────
 
@@ -10,7 +11,7 @@ export async function getSummary(req: Request, res: Response): Promise<void> {
   const { mes, ano } = req.query as { mes?: string; ano?: string };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const baseFilter: Record<string, any> = { userId };
+  const baseFilter: Record<string, any> = { usuarioId: new Types.ObjectId(userId) };
 
   if (mes || ano) {
     const year = ano ? parseInt(ano, 10) : new Date().getFullYear();
@@ -18,23 +19,23 @@ export async function getSummary(req: Request, res: Response): Promise<void> {
       const month = parseInt(mes, 10);
       const start = new Date(Date.UTC(year, month - 1, 1));
       const end = new Date(Date.UTC(year, month, 1));
-      baseFilter["date"] = { $gte: start, $lt: end };
+      baseFilter["data"] = { $gte: start, $lt: end };
     } else {
       const start = new Date(Date.UTC(year, 0, 1));
       const end = new Date(Date.UTC(year + 1, 0, 1));
-      baseFilter["date"] = { $gte: start, $lt: end };
+      baseFilter["data"] = { $gte: start, $lt: end };
     }
   }
 
   // ── Totais ────────────────────────────────────────────────────────────────
   const [receitasAgg, despesasAgg] = await Promise.all([
-    TransactionModel.aggregate([
-      { $match: { ...baseFilter, type: "receita" } },
-      { $group: { _id: null, total: { $sum: "$amount" } } },
+    TransacaoModel.aggregate([
+      { $match: { ...baseFilter, tipo: "receita" } },
+      { $group: { _id: null, total: { $sum: "$valor" } } },
     ]),
-    TransactionModel.aggregate([
-      { $match: { ...baseFilter, type: "despesa" } },
-      { $group: { _id: null, total: { $sum: "$amount" } } },
+    TransacaoModel.aggregate([
+      { $match: { ...baseFilter, tipo: "despesa" } },
+      { $group: { _id: null, total: { $sum: "$valor" } } },
     ]),
   ]);
 
@@ -43,14 +44,14 @@ export async function getSummary(req: Request, res: Response): Promise<void> {
   const saldo = totalReceitas - totalDespesas;
 
   // ── Agregação por categoria ───────────────────────────────────────────────
-  const categoryAgg = await TransactionModel.aggregate([
+  const categoryAgg = await TransacaoModel.aggregate([
     { $match: baseFilter },
-    { $group: { _id: "$categoryId", total: { $sum: "$amount" } } },
+    { $group: { _id: "$categoriaId", total: { $sum: "$valor" } } },
     { $sort: { total: -1 } },
   ]);
 
   const categoryIds = categoryAgg.map((a) => a._id);
-  const categories = await CategoryModel.find({ _id: { $in: categoryIds } });
+  const categories = await CategoriaModel.find({ _id: { $in: categoryIds } });
 
   const catMap = new Map(categories.map((c) => [c._id.toString(), c]));
 
@@ -60,25 +61,25 @@ export async function getSummary(req: Request, res: Response): Promise<void> {
       if (!cat) return null;
       return {
         id: cat._id.toString(),
-        name: cat.name,
-        color: cat.color,
-        icon: cat.icon,
+        name: cat.nome,
+        color: cat.cor,
+        icon: cat.icone,
         total: a.total,
       };
     })
     .filter(Boolean);
 
   // ── Evolução mensal (últimos 6 meses) ─────────────────────────────────────
-  const monthlyAgg = await TransactionModel.aggregate([
-    { $match: { userId } },
+  const monthlyAgg = await TransacaoModel.aggregate([
+    { $match: { usuarioId: new Types.ObjectId(userId) } },
     {
       $group: {
         _id: {
-          year: { $year: "$date" },
-          month: { $month: "$date" },
-          type: "$type",
+          year: { $year: "$data" },
+          month: { $month: "$data" },
+          type: "$tipo",
         },
-        total: { $sum: "$amount" },
+        total: { $sum: "$valor" },
       },
     },
     { $sort: { "_id.year": 1, "_id.month": 1 } },

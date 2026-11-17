@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { UserModel } from "../db/models.js";
+import { UsuarioModel } from "../db/models.js";
 import { JWT_SECRET, JWT_EXPIRES_IN } from "./auth.middleware.js";
 
 // ─── Register ─────────────────────────────────────────────────────────────────
@@ -18,7 +18,7 @@ export async function register(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const exists = await UserModel.findOne({ email });
+  const exists = await UsuarioModel.findOne({ email });
   if (exists) {
     res.status(409).json({ error: "E-mail já cadastrado." });
     return;
@@ -26,10 +26,10 @@ export async function register(req: Request, res: Response): Promise<void> {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const newUser = await UserModel.create({
-    name,
+  const newUser = await UsuarioModel.create({
+    nome: name,
     email,
-    password: hashedPassword,
+    senha: hashedPassword,
   });
 
   const token = jwt.sign(
@@ -42,7 +42,7 @@ export async function register(req: Request, res: Response): Promise<void> {
     token,
     user: {
       id: newUser._id.toString(),
-      name: newUser.name,
+      name: newUser.nome,
       email: newUser.email,
     },
   });
@@ -61,13 +61,13 @@ export async function login(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const user = await UserModel.findOne({ email });
+  const user = await UsuarioModel.findOne({ email });
   if (!user) {
     res.status(401).json({ error: "Credenciais inválidas." });
     return;
   }
 
-  const passwordMatch = await bcrypt.compare(password, user.password);
+  const passwordMatch = await bcrypt.compare(password, user.senha);
   if (!passwordMatch) {
     res.status(401).json({ error: "Credenciais inválidas." });
     return;
@@ -81,6 +81,6 @@ export async function login(req: Request, res: Response): Promise<void> {
 
   res.json({
     token,
-    user: { id: user._id.toString(), name: user.name, email: user.email },
+    user: { id: user._id.toString(), name: user.nome, email: user.email },
   });
 }

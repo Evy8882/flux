@@ -6,6 +6,9 @@ import usersRoutes from "./users/users.routes.js";
 import categoriesRoutes from "./categories/categories.routes.js";
 import transactionsRoutes from "./transactions/transactions.routes.js";
 import dashboardRoutes from "./dashboard/dashboard.routes.js";
+import goalsRoutes from "./goals/goals.routes.js";
+import budgetsRoutes from "./budgets/budgets.routes.js";
+import recurrencesRoutes from "./recurrences/recurrences.routes.js";
 
 const app = express();
 
@@ -19,6 +22,9 @@ app.use("/api/users", usersRoutes);
 app.use("/api/categories", categoriesRoutes);
 app.use("/api/transactions", transactionsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/goals", goalsRoutes);
+app.use("/api/budgets", budgetsRoutes);
+app.use("/api/recurrences", recurrencesRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_req, res) => {
