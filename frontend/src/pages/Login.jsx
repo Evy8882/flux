@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import logo from "../assets/logo.png";
+import { api } from "../services/api";
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -16,29 +17,13 @@ function Login({ onLogin }) {
     setError("");
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Erro ao fazer login.");
-      }
+      const data = await api.post("/auth/login", { email, password });
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
       setIsLoading(false);
-
-      if (onLogin) {
-        onLogin(data.user);
-      }
-
+      if (onLogin) onLogin(data.user);
       navigate("/");
     } catch (err) {
       setIsLoading(false);
@@ -61,7 +46,11 @@ function Login({ onLogin }) {
           <p>Entre com suas credenciais para gerenciar suas finanças.</p>
         </div>
 
-        {error && <div className="error-message" style={{ color: "red", marginBottom: "1rem", fontSize: "0.9rem" }}>{error}</div>}
+        {error && (
+          <div className="error-message" style={{ color: "red", marginBottom: "1rem", fontSize: "0.9rem" }}>
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
