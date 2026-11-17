@@ -1,10 +1,8 @@
 import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { v4 as uuidv4 } from "uuid";
-import { readData, writeData } from "../db/db.js";
+import { UserModel } from "../db/models.js";
 import { JWT_SECRET, JWT_EXPIRES_IN } from "./auth.middleware.js";
-import type { User } from "../types.js";
 
 // ─── Register ─────────────────────────────────────────────────────────────────
 
@@ -20,9 +18,7 @@ export async function register(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const users = readData<User>("users");
-  const exists = users.find((u) => u.email === email);
-
+  const exists = await UserModel.findOne({ email });
   if (exists) {
     res.status(409).json({ error: "E-mail já cadastrado." });
     return;
@@ -30,26 +26,25 @@ export async function register(req: Request, res: Response): Promise<void> {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const newUser: User = {
-    id: uuidv4(),
+  const newUser = await UserModel.create({
     name,
     email,
     password: hashedPassword,
-    createdAt: new Date().toISOString(),
-  };
-
-  users.push(newUser);
-  writeData("users", users);
+  });
 
   const token = jwt.sign(
-    { userId: newUser.id, email: newUser.email },
+    { userId: newUser._id.toString(), email: newUser.email },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
   );
 
   res.status(201).json({
     token,
-    user: { id: newUser.id, name: newUser.name, email: newUser.email },
+    user: {
+      id: newUser._id.toString(),
+      name: newUser.name,
+      email: newUser.email,
+    },
   });
 }
 
@@ -66,29 +61,26 @@ export async function login(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const users = readData<User>("users");
-  const user = users.find((u) => u.email === email);
-
+  const user = await UserModel.findOne({ email });
   if (!user) {
     res.status(401).json({ error: "Credenciais inválidas." });
     return;
   }
 
   const passwordMatch = await bcrypt.compare(password, user.password);
-
   if (!passwordMatch) {
     res.status(401).json({ error: "Credenciais inválidas." });
     return;
   }
 
   const token = jwt.sign(
-    { userId: user.id, email: user.email },
+    { userId: user._id.toString(), email: user.email },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
   );
 
   res.json({
     token,
-    user: { id: user.id, name: user.name, email: user.email },
+    user: { id: user._id.toString(), name: user.name, email: user.email },
   });
 }

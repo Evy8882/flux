@@ -1,22 +1,19 @@
 import type { Request, Response } from "express";
-import { readData } from "../db/db.js";
-import type { User } from "../types.js";
+import { UserModel } from "../db/models.js";
 
 // GET /api/users/profile
-export function getProfile(req: Request, res: Response): void {
+export async function getProfile(req: Request, res: Response): Promise<void> {
   const { userId } = req.user!;
 
-  const users = readData<User>("users");
-  const user = users.find((u) => u.id === userId);
+  const user = await UserModel.findById(userId).select("-password");
 
   if (!user) {
     res.status(404).json({ error: "Usuário não encontrado." });
     return;
   }
 
-  // Retorna o perfil sem expor o hash da senha
   res.json({
-    id: user.id,
+    id: user._id.toString(),
     name: user.name,
     email: user.email,
     createdAt: user.createdAt,

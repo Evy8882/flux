@@ -1,20 +1,29 @@
 import type { Request, Response } from "express";
-import { v4 as uuidv4 } from "uuid";
-import { readData, writeData } from "../db/db.js";
-import type { Category } from "../types.js";
+import { Types } from "mongoose";
+import { CategoryModel } from "../db/models.js";
 
 // ─── GET /api/categories ──────────────────────────────────────────────────────
 
-export function listCategories(req: Request, res: Response): void {
+export async function listCategories(req: Request, res: Response): Promise<void> {
   const { userId } = req.user!;
-  const categories = readData<Category>("categories");
-  const userCategories = categories.filter((c) => c.userId === userId);
-  res.json(userCategories);
+
+  const categories = await CategoryModel.find({ userId }).sort({ createdAt: 1 });
+
+  res.json(
+    categories.map((c) => ({
+      id: c._id.toString(),
+      userId: c.userId.toString(),
+      name: c.name,
+      color: c.color,
+      icon: c.icon,
+      createdAt: c.createdAt,
+    }))
+  );
 }
 
 // ─── POST /api/categories ─────────────────────────────────────────────────────
 
-export function createCategory(req: Request, res: Response): void {
+export async function createCategory(req: Request, res: Response): Promise<void> {
   const { userId } = req.user!;
   const { name, color, icon } = req.body as {
     name?: string;
@@ -27,26 +36,26 @@ export function createCategory(req: Request, res: Response): void {
     return;
   }
 
-  const categories = readData<Category>("categories");
-
-  const newCategory: Category = {
-    id: uuidv4(),
-    userId,
+  const category = await CategoryModel.create({
+    userId: new Types.ObjectId(userId),
     name,
     color: color ?? "#6366f1",
     icon: icon ?? "tag",
-    createdAt: new Date().toISOString(),
-  };
+  });
 
-  categories.push(newCategory);
-  writeData("categories", categories);
-
-  res.status(201).json(newCategory);
+  res.status(201).json({
+    id: category._id.toString(),
+    userId: category.userId.toString(),
+    name: category.name,
+    color: category.color,
+    icon: category.icon,
+    createdAt: category.createdAt,
+  });
 }
 
 // ─── PUT /api/categories/:id ──────────────────────────────────────────────────
 
-export function updateCategory(req: Request, res: Response): void {
+export async function updateCategory(req: Request, res: Response): Promise<void> {
   const { userId } = req.user!;
   const { id } = req.params as { id: string };
   const { name, color, icon } = req.body as {
@@ -55,45 +64,49 @@ export function updateCategory(req: Request, res: Response): void {
     icon?: string;
   };
 
-  const categories = readData<Category>("categories");
-  const index = categories.findIndex(
-    (c) => c.id === id && c.userId === userId
-  );
-
-  if (index === -1) {
+  if (!Types.ObjectId.isValid(id)) {
     res.status(404).json({ error: "Categoria não encontrada." });
     return;
   }
 
-  const updated: Category = {
-    ...categories[index]!,
-    name: name ?? categories[index]!.name,
-    color: color ?? categories[index]!.color,
-    icon: icon ?? categories[index]!.icon,
-  };
+  const updated = await CategoryModel.findOneAndUpdate(
+    { _id: id, userId },
+    { ...(name && { name }), ...(color && { color }), ...(icon && { icon }) },
+    { new: true }
+  );
 
-  categories[index] = updated;
-  writeData("categories", categories);
+  if (!updated) {
+    res.status(404).json({ error: "Categoria não encontrada." });
+    return;
+  }
 
-  res.json(updated);
+  res.json({
+    id: updated._id.toString(),
+    userId: updated.userId.toString(),
+    name: updated.name,
+    color: updated.color,
+    icon: updated.icon,
+    createdAt: updated.createdAt,
+  });
 }
 
 // ─── DELETE /api/categories/:id ───────────────────────────────────────────────
 
-export function deleteCategory(req: Request, res: Response): void {
+export async function deleteCategory(req: Request, res: Response): Promise<void> {
   const { userId } = req.user!;
   const { id } = req.params as { id: string };
 
-  const categories = readData<Category>("categories");
-  const filtered = categories.filter(
-    (c) => !(c.id === id && c.userId === userId)
-  );
-
-  if (filtered.length === categories.length) {
+  if (!Types.ObjectId.isValid(id)) {
     res.status(404).json({ error: "Categoria não encontrada." });
     return;
   }
 
-  writeData("categories", filtered);
+  const result = await CategoryModel.deleteOne({ _id: id, userId });
+
+  if (result.deletedCount === 0) {
+    res.status(404).json({ error: "Categoria não encontrada." });
+    return;
+  }
+
   res.status(204).send();
 }

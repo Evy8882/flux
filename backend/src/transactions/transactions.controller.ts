@@ -1,12 +1,12 @@
 import type { Request, Response } from "express";
-import { v4 as uuidv4 } from "uuid";
-import { readData, writeData } from "../db/db.js";
-import type { Transaction, TransactionType } from "../types.js";
+import { Types } from "mongoose";
+import { TransactionModel } from "../db/models.js";
+import type { TransactionType } from "../db/models.js";
 
 // ─── GET /api/transactions ────────────────────────────────────────────────────
 // Query params opcionais: mes, ano, tipo
 
-export function listTransactions(req: Request, res: Response): void {
+export async function listTransactions(req: Request, res: Response): Promise<void> {
   const { userId } = req.user!;
   const { mes, ano, tipo } = req.query as {
     mes?: string;
@@ -14,39 +14,46 @@ export function listTransactions(req: Request, res: Response): void {
     tipo?: string;
   };
 
-  let transactions = readData<Transaction>("transactions").filter(
-    (t) => t.userId === userId
-  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filter: Record<string, any> = { userId };
 
-  // Filtro por mês (1–12)
-  if (mes) {
-    const month = parseInt(mes, 10);
-    transactions = transactions.filter((t) => {
-      const d = new Date(t.date);
-      return d.getUTCMonth() + 1 === month;
-    });
+  if (mes || ano) {
+    const year = ano ? parseInt(ano, 10) : new Date().getFullYear();
+    if (mes) {
+      const month = parseInt(mes, 10);
+      const start = new Date(Date.UTC(year, month - 1, 1));
+      const end = new Date(Date.UTC(year, month, 1));
+      filter["date"] = { $gte: start, $lt: end };
+    } else {
+      const start = new Date(Date.UTC(year, 0, 1));
+      const end = new Date(Date.UTC(year + 1, 0, 1));
+      filter["date"] = { $gte: start, $lt: end };
+    }
   }
 
-  // Filtro por ano
-  if (ano) {
-    const year = parseInt(ano, 10);
-    transactions = transactions.filter((t) => {
-      const d = new Date(t.date);
-      return d.getUTCFullYear() === year;
-    });
-  }
-
-  // Filtro por tipo (receita | despesa)
   if (tipo === "receita" || tipo === "despesa") {
-    transactions = transactions.filter((t) => t.type === tipo);
+    filter["type"] = tipo;
   }
 
-  res.json(transactions);
+  const transactions = await TransactionModel.find(filter).sort({ date: -1 });
+
+  res.json(
+    transactions.map((t) => ({
+      id: t._id.toString(),
+      userId: t.userId.toString(),
+      categoryId: t.categoryId.toString(),
+      type: t.type,
+      amount: t.amount,
+      description: t.description,
+      date: t.date,
+      createdAt: t.createdAt,
+    }))
+  );
 }
 
 // ─── POST /api/transactions ───────────────────────────────────────────────────
 
-export function createTransaction(req: Request, res: Response): void {
+export async function createTransaction(req: Request, res: Response): Promise<void> {
   const { userId } = req.user!;
   const { categoryId, type, amount, description, date } = req.body as {
     categoryId?: string;
@@ -57,12 +64,10 @@ export function createTransaction(req: Request, res: Response): void {
   };
 
   if (!categoryId || !type || amount === undefined || !description || !date) {
-    res
-      .status(400)
-      .json({
-        error:
-          "Os campos categoryId, type, amount, description e date são obrigatórios.",
-      });
+    res.status(400).json({
+      error:
+        "Os campos categoryId, type, amount, description e date são obrigatórios.",
+    });
     return;
   }
 
@@ -76,47 +81,65 @@ export function createTransaction(req: Request, res: Response): void {
     return;
   }
 
-  const transactions = readData<Transaction>("transactions");
+  if (!Types.ObjectId.isValid(categoryId)) {
+    res.status(400).json({ error: "categoryId inválido." });
+    return;
+  }
 
-  const newTransaction: Transaction = {
-    id: uuidv4(),
-    userId,
-    categoryId,
+  const transaction = await TransactionModel.create({
+    userId: new Types.ObjectId(userId),
+    categoryId: new Types.ObjectId(categoryId),
     type,
     amount,
     description,
-    date,
-    createdAt: new Date().toISOString(),
-  };
+    date: new Date(date),
+  });
 
-  transactions.push(newTransaction);
-  writeData("transactions", transactions);
-
-  res.status(201).json(newTransaction);
+  res.status(201).json({
+    id: transaction._id.toString(),
+    userId: transaction.userId.toString(),
+    categoryId: transaction.categoryId.toString(),
+    type: transaction.type,
+    amount: transaction.amount,
+    description: transaction.description,
+    date: transaction.date,
+    createdAt: transaction.createdAt,
+  });
 }
 
 // ─── GET /api/transactions/:id ────────────────────────────────────────────────
 
-export function getTransaction(req: Request, res: Response): void {
+export async function getTransaction(req: Request, res: Response): Promise<void> {
   const { userId } = req.user!;
   const { id } = req.params as { id: string };
 
-  const transactions = readData<Transaction>("transactions");
-  const transaction = transactions.find(
-    (t) => t.id === id && t.userId === userId
-  );
+  if (!Types.ObjectId.isValid(id)) {
+    res.status(404).json({ error: "Transação não encontrada." });
+    return;
+  }
+
+  const transaction = await TransactionModel.findOne({ _id: id, userId });
 
   if (!transaction) {
     res.status(404).json({ error: "Transação não encontrada." });
     return;
   }
 
-  res.json(transaction);
+  res.json({
+    id: transaction._id.toString(),
+    userId: transaction.userId.toString(),
+    categoryId: transaction.categoryId.toString(),
+    type: transaction.type,
+    amount: transaction.amount,
+    description: transaction.description,
+    date: transaction.date,
+    createdAt: transaction.createdAt,
+  });
 }
 
 // ─── PUT /api/transactions/:id ────────────────────────────────────────────────
 
-export function updateTransaction(req: Request, res: Response): void {
+export async function updateTransaction(req: Request, res: Response): Promise<void> {
   const { userId } = req.user!;
   const { id } = req.params as { id: string };
   const { categoryId, type, amount, description, date } = req.body as {
@@ -127,12 +150,7 @@ export function updateTransaction(req: Request, res: Response): void {
     date?: string;
   };
 
-  const transactions = readData<Transaction>("transactions");
-  const index = transactions.findIndex(
-    (t) => t.id === id && t.userId === userId
-  );
-
-  if (index === -1) {
+  if (!Types.ObjectId.isValid(id)) {
     res.status(404).json({ error: "Transação não encontrada." });
     return;
   }
@@ -147,38 +165,54 @@ export function updateTransaction(req: Request, res: Response): void {
     return;
   }
 
-  const current = transactions[index]!;
-  const updated: Transaction = {
-    ...current,
-    categoryId: categoryId ?? current.categoryId,
-    type: type ?? current.type,
-    amount: amount ?? current.amount,
-    description: description ?? current.description,
-    date: date ?? current.date,
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const patch: Record<string, any> = {};
+  if (categoryId) patch["categoryId"] = new Types.ObjectId(categoryId);
+  if (type) patch["type"] = type;
+  if (amount !== undefined) patch["amount"] = amount;
+  if (description) patch["description"] = description;
+  if (date) patch["date"] = new Date(date);
 
-  transactions[index] = updated;
-  writeData("transactions", transactions);
-
-  res.json(updated);
-}
-
-// ─── DELETE /api/transactions/:id ─────────────────────────────────────────────
-
-export function deleteTransaction(req: Request, res: Response): void {
-  const { userId } = req.user!;
-  const { id } = req.params as { id: string };
-
-  const transactions = readData<Transaction>("transactions");
-  const filtered = transactions.filter(
-    (t) => !(t.id === id && t.userId === userId)
+  const updated = await TransactionModel.findOneAndUpdate(
+    { _id: id, userId },
+    patch,
+    { new: true }
   );
 
-  if (filtered.length === transactions.length) {
+  if (!updated) {
     res.status(404).json({ error: "Transação não encontrada." });
     return;
   }
 
-  writeData("transactions", filtered);
+  res.json({
+    id: updated._id.toString(),
+    userId: updated.userId.toString(),
+    categoryId: updated.categoryId.toString(),
+    type: updated.type,
+    amount: updated.amount,
+    description: updated.description,
+    date: updated.date,
+    createdAt: updated.createdAt,
+  });
+}
+
+// ─── DELETE /api/transactions/:id ─────────────────────────────────────────────
+
+export async function deleteTransaction(req: Request, res: Response): Promise<void> {
+  const { userId } = req.user!;
+  const { id } = req.params as { id: string };
+
+  if (!Types.ObjectId.isValid(id)) {
+    res.status(404).json({ error: "Transação não encontrada." });
+    return;
+  }
+
+  const result = await TransactionModel.deleteOne({ _id: id, userId });
+
+  if (result.deletedCount === 0) {
+    res.status(404).json({ error: "Transação não encontrada." });
+    return;
+  }
+
   res.status(204).send();
 }
