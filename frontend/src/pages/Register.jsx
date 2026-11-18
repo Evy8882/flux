@@ -99,16 +99,6 @@ function Register({ onLogin }) {
             </div>
           </div>
 
-          <div className="login-options">
-            <label className="remember-me">
-              <input type="checkbox" />
-              <span>Lembrar de mim</span>
-            </label>
-            <a href="#forgot" onClick={(e) => e.preventDefault()} className="forgot-password">
-              Esqueceu a senha?
-            </a>
-          </div>
-
           <button type="submit" className="primary-button login-button" disabled={isLoading}>
             {isLoading ? "Criando conta..." : "Criar conta"}
             {!isLoading && <ArrowRight size={16} />}
@@ -117,8 +107,7 @@ function Register({ onLogin }) {
 
         <div className="login-footer">
           <p>
-            Já tem uma conta?{" "}
-            <Link to="/login">Entrar na conta</Link>
+            Já tem uma conta? <Link to="/login">Entrar na conta</Link>
           </p>
         </div>
       </div>

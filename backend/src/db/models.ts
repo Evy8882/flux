@@ -51,7 +51,7 @@ export type TipoTransacao = "receita" | "despesa";
 export interface ITransacao extends Document {
   _id: Types.ObjectId;
   usuarioId: Types.ObjectId;
-  categoriaId: Types.ObjectId;
+  categoryId: string;
   tipo: TipoTransacao;
   valor: number;
   descricao: string;
@@ -62,7 +62,7 @@ export interface ITransacao extends Document {
 const transacaoSchema = new Schema<ITransacao>(
   {
     usuarioId: { type: Schema.Types.ObjectId, ref: "Usuario", required: true, index: true },
-    categoriaId: { type: Schema.Types.ObjectId, ref: "Categoria", required: true },
+    categoryId: { type: String, required: true, trim: true },
     tipo: { type: String, enum: ["receita", "despesa"], required: true },
     valor: { type: Number, required: true, min: 0 },
     descricao: { type: String, required: true, trim: true },
@@ -126,7 +126,7 @@ export const OrcamentoModel = model<IOrcamento>("Orcamento", orcamentoSchema);
 export interface IRecorrencia extends Document {
   _id: Types.ObjectId;
   usuarioId: Types.ObjectId;
-  categoriaId: Types.ObjectId;
+  categoriaId: string;
   tipo: TipoTransacao;
   valor: number;
   descricao: string;
@@ -138,7 +138,7 @@ export interface IRecorrencia extends Document {
 const recorrenciaSchema = new Schema<IRecorrencia>(
   {
     usuarioId: { type: Schema.Types.ObjectId, ref: "Usuario", required: true, index: true },
-    categoriaId: { type: Schema.Types.ObjectId, ref: "Categoria", required: true },
+    categoriaId: { type: String, required: true, trim: true },
     tipo: { type: String, enum: ["receita", "despesa"], required: true },
     valor: { type: Number, required: true, min: 0 },
     descricao: { type: String, required: true, trim: true },

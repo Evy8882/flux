@@ -83,16 +83,6 @@ function Login({ onLogin }) {
             </div>
           </div>
 
-          <div className="login-options">
-            <label className="remember-me">
-              <input type="checkbox" />
-              <span>Lembrar de mim</span>
-            </label>
-            <a href="#forgot" onClick={(e) => e.preventDefault()} className="forgot-password">
-              Esqueceu a senha?
-            </a>
-          </div>
-
           <button type="submit" className="primary-button login-button" disabled={isLoading}>
             {isLoading ? "Entrando..." : "Entrar na conta"}
             {!isLoading && <ArrowRight size={16} />}
@@ -101,8 +91,7 @@ function Login({ onLogin }) {
 
         <div className="login-footer">
           <p>
-            Não tem uma conta?{" "}
-            <Link to="/register">Criar conta gratuita</Link>
+            Não tem uma conta? <Link to="/register">Criar conta gratuita</Link>
           </p>
         </div>
       </div>

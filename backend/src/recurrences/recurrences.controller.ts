@@ -18,7 +18,7 @@ export async function listRecurrences(req: Request, res: Response): Promise<void
     recurrences.map((r) => ({
       id: r._id.toString(),
       userId: r.usuarioId.toString(),
-      categoryId: r.categoriaId.toString(),
+      categoryId: r.categoriaId,
       type: r.tipo,
       amount: r.valor,
       description: r.descricao,
@@ -44,14 +44,8 @@ export async function createRecurrence(req: Request, res: Response): Promise<voi
 
   if (!categoryId || !type || amount === undefined || !description || !frequency || !nextDate) {
     res.status(400).json({
-      error:
-        "Os campos categoryId, type, amount, description, frequency e nextDate são obrigatórios.",
+      error: "Os campos categoryId, type, amount, description, frequency e nextDate são obrigatórios.",
     });
-    return;
-  }
-
-  if (!Types.ObjectId.isValid(categoryId)) {
-    res.status(400).json({ error: "categoryId inválido." });
     return;
   }
 
@@ -73,7 +67,7 @@ export async function createRecurrence(req: Request, res: Response): Promise<voi
 
   const recurrence = await RecorrenciaModel.create({
     usuarioId: new Types.ObjectId(userId),
-    categoriaId: new Types.ObjectId(categoryId),
+    categoriaId: categoryId,
     tipo: type,
     valor: amount,
     descricao: description,
@@ -84,7 +78,7 @@ export async function createRecurrence(req: Request, res: Response): Promise<voi
   res.status(201).json({
     id: recurrence._id.toString(),
     userId: recurrence.usuarioId.toString(),
-    categoryId: recurrence.categoriaId.toString(),
+    categoryId: recurrence.categoriaId,
     type: recurrence.tipo,
     amount: recurrence.valor,
     description: recurrence.descricao,
@@ -118,7 +112,7 @@ export async function getRecurrence(req: Request, res: Response): Promise<void> 
   res.json({
     id: recurrence._id.toString(),
     userId: recurrence.usuarioId.toString(),
-    categoryId: recurrence.categoriaId.toString(),
+    categoryId: recurrence.categoriaId,
     type: recurrence.tipo,
     amount: recurrence.valor,
     description: recurrence.descricao,
@@ -147,30 +141,9 @@ export async function updateRecurrence(req: Request, res: Response): Promise<voi
     return;
   }
 
-  if (categoryId && !Types.ObjectId.isValid(categoryId)) {
-    res.status(400).json({ error: "categoryId inválido." });
-    return;
-  }
-
-  if (type && type !== "receita" && type !== "despesa") {
-    res.status(400).json({ error: "type deve ser 'receita' ou 'despesa'." });
-    return;
-  }
-
-  if (amount !== undefined && (typeof amount !== "number" || amount <= 0)) {
-    res.status(400).json({ error: "amount deve ser um número positivo." });
-    return;
-  }
-
-  const validFrequencies: Frequencia[] = ["mensal", "anual", "semanal"];
-  if (frequency && !validFrequencies.includes(frequency)) {
-    res.status(400).json({ error: "frequency deve ser 'mensal', 'anual' ou 'semanal'." });
-    return;
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const patch: Record<string, any> = {};
-  if (categoryId) patch["categoriaId"] = new Types.ObjectId(categoryId);
+  if (categoryId) patch["categoryId"] = categoryId;
   if (type) patch["tipo"] = type;
   if (amount !== undefined) patch["valor"] = amount;
   if (description) patch["descricao"] = description;
@@ -191,7 +164,7 @@ export async function updateRecurrence(req: Request, res: Response): Promise<voi
   res.json({
     id: updated._id.toString(),
     userId: updated.usuarioId.toString(),
-    categoryId: updated.categoriaId.toString(),
+    categoryId: updated.categoriaId,
     type: updated.tipo,
     amount: updated.valor,
     description: updated.descricao,

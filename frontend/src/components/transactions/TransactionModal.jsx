@@ -1,49 +1,67 @@
 import { useState } from "react";
 import { X, TrendingUp, TrendingDown } from "lucide-react";
-import { categories } from "../../data/categories";
+import { api } from "../../services/api";
+
+const STATIC_CATEGORIES = [
+  { id: "alimentacao", name: "Alimentação" },
+  { id: "transporte", name: "Transporte" },
+  { id: "moradia", name: "Moradia" },
+  { id: "saude", name: "Saúde" },
+  { id: "lazer", name: "Lazer" },
+  { id: "educacao", name: "Educação" },
+  { id: "salario", name: "Salário" },
+  { id: "freelance", name: "Freelance" },
+  { id: "outros", name: "Outros" },
+];
 
 function TransactionModal({ isOpen, onClose, onSave }) {
   const [form, setForm] = useState({
-    name: "",
-    type: "expense",
-    value: "",
+    description: "",
+    type: "despesa",
+    amount: "",
     date: new Date().toISOString().slice(0, 10),
-    category: categories.expense[0],
+    categoryId: STATIC_CATEGORIES[0].name,
   });
 
   if (!isOpen) return null;
 
   function handleTypeChange(type) {
-    setForm({
-      ...form,
+    setForm((prev) => ({
+      ...prev,
       type,
-      category: categories[type][0],
-    });
+    }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
-    const newTransaction = {
-      id: Date.now(),
-      name: form.name.trim(),
-      type: form.type,
-      value: Number(form.value),
-      date: form.date,
-      category: form.category,
-    };
+    try {
+      const payload = {
+        description: form.description.trim(),
+        type: form.type, // "despesa" ou "receita"
+        amount: Number(form.amount),
+        date: form.date,
+        categoryId: form.categoryId, // Se o seu backend aceitar o nome ou ID direto
+      };
 
-    onSave(newTransaction);
+      const newTransaction = await api.post("/transactions", payload);
 
-    setForm({
-      name: "",
-      type: "expense",
-      value: "",
-      date: new Date().toISOString().slice(0, 10),
-      category: categories.expense[0],
-    });
+      if (onSave) {
+        onSave(newTransaction);
+      }
 
-    onClose();
+      setForm({
+        description: "",
+        type: "despesa",
+        amount: "",
+        date: new Date().toISOString().slice(0, 10),
+        categoryId: STATIC_CATEGORIES[0].name,
+      });
+
+      onClose();
+    } catch (err) {
+      alert("Erro ao salvar transação: " + err.message);
+    }
   }
 
   return (
@@ -70,11 +88,11 @@ function TransactionModal({ isOpen, onClose, onSave }) {
             <button
               type="button"
               className={
-                form.type === "expense"
+                form.type === "despesa"
                   ? "selected expense-option"
                   : ""
               }
-              onClick={() => handleTypeChange("expense")}
+              onClick={() => handleTypeChange("despesa")}
             >
               <TrendingDown size={18} /> Despesa
             </button>
@@ -82,24 +100,24 @@ function TransactionModal({ isOpen, onClose, onSave }) {
             <button
               type="button"
               className={
-                form.type === "income"
+                form.type === "receita"
                   ? "selected income-option"
                   : ""
               }
-              onClick={() => handleTypeChange("income")}
+              onClick={() => handleTypeChange("receita")}
             >
               <TrendingUp size={18} /> Receita
             </button>
           </div>
 
-          <label htmlFor="transaction-name">Descrição</label>
+          <label htmlFor="transaction-description">Descrição</label>
           <input
-            id="transaction-name"
+            id="transaction-description"
             type="text"
             placeholder="Ex.: Compra no mercado"
-            value={form.name}
+            value={form.description}
             onChange={(event) =>
-              setForm({ ...form, name: event.target.value })
+              setForm({ ...form, description: event.target.value })
             }
             required
           />
@@ -113,9 +131,9 @@ function TransactionModal({ isOpen, onClose, onSave }) {
                 min="0.01"
                 step="0.01"
                 placeholder="0,00"
-                value={form.value}
+                value={form.amount}
                 onChange={(event) =>
-                  setForm({ ...form, value: event.target.value })
+                  setForm({ ...form, amount: event.target.value })
                 }
                 required
               />
@@ -138,14 +156,15 @@ function TransactionModal({ isOpen, onClose, onSave }) {
           <label htmlFor="transaction-category">Categoria</label>
           <select
             id="transaction-category"
-            value={form.category}
+            value={form.categoryId}
             onChange={(event) =>
-              setForm({ ...form, category: event.target.value })
+              setForm({ ...form, categoryId: event.target.value })
             }
+            required
           >
-            {categories[form.type].map((category) => (
-              <option key={category} value={category}>
-                {category}
+            {STATIC_CATEGORIES.map((category) => (
+              <option key={category.id} value={category.name}>
+                {category.name}
               </option>
             ))}
           </select>

@@ -1,5 +1,5 @@
 import "../pages/Recurrences.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Repeat,
   Plus,
@@ -8,79 +8,89 @@ import {
   CalendarDays,
   TrendingUp,
   TrendingDown,
+  X,
 } from "lucide-react";
 
-import { categories } from "../data/categories";
 import { formatCurrency } from "../utils/formatCurrency";
+import { api } from "../services/api";
+
+const CATEGORIES = [
+  { id: "alimentacao", name: "Alimentação" },
+  { id: "transporte", name: "Transporte" },
+  { id: "moradia", name: "Moradia" },
+  { id: "saude", name: "Saúde" },
+  { id: "lazer", name: "Lazer" },
+  { id: "educacao", name: "Educação" },
+  { id: "salario", name: "Salário" },
+  { id: "freelance", name: "Freelance" },
+  { id: "outros", name: "Outros" },
+];
 
 const frequencies = [
-  "Semanal",
-  "Mensal",
-  "Bimestral",
-  "Trimestral",
-  "Semestral",
-  "Anual",
+  { label: "Semanal", value: "semanal" },
+  { label: "Mensal", value: "mensal" },
+  { label: "Anual", value: "anual" },
 ];
 
 function Recurrences() {
-  const [recurrences, setRecurrences] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("flux-recurrences")) || [];
-    } catch {
-      return [];
-    }
-  });
+  const [recurrences, setRecurrences] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRecurrence, setEditingRecurrence] = useState(null);
 
   const [form, setForm] = useState({
-    name: "",
-    type: "expense",
-    value: "",
-    category: categories.expense[0],
-    frequency: "Mensal",
+    description: "",
+    type: "despesa",
+    amount: "",
+    categoryId: CATEGORIES[0].name,
+    frequency: "mensal",
     nextDate: new Date().toISOString().slice(0, 10),
   });
 
   useEffect(() => {
-    localStorage.setItem(
-      "flux-recurrences",
-      JSON.stringify(recurrences)
-    );
-  }, [recurrences]);
+    async function loadData() {
+      try {
+        const recsRes = await api.get("/recurrences");
+        setRecurrences(recsRes);
+      } catch (err) {
+        console.error("Erro ao carregar recorrências:", err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
 
   const totalIncome = recurrences
-    .filter((item) => item.type === "income")
-    .reduce((total, item) => total + Number(item.value), 0);
+    .filter((item) => item.type === "receita")
+    .reduce((total, item) => total + Number(item.amount), 0);
 
   const totalExpenses = recurrences
-    .filter((item) => item.type === "expense")
-    .reduce((total, item) => total + Number(item.value), 0);
+    .filter((item) => item.type === "despesa")
+    .reduce((total, item) => total + Number(item.amount), 0);
 
   function openModal(recurrence = null) {
     setEditingRecurrence(recurrence);
-
     setForm(
       recurrence
         ? {
-            name: recurrence.name,
+            description: recurrence.description,
             type: recurrence.type,
-            value: String(recurrence.value),
-            category: recurrence.category,
+            amount: String(recurrence.amount),
+            categoryId: recurrence.categoryId || CATEGORIES[0].name,
             frequency: recurrence.frequency,
-            nextDate: recurrence.nextDate,
+            nextDate: recurrence.nextDate ? recurrence.nextDate.slice(0, 10) : "",
           }
         : {
-            name: "",
-            type: "expense",
-            value: "",
-            category: categories.expense[0],
-            frequency: "Mensal",
+            description: "",
+            type: "despesa",
+            amount: "",
+            categoryId: CATEGORIES[0].name,
+            frequency: "mensal",
             nextDate: new Date().toISOString().slice(0, 10),
           }
     );
-
     setModalOpen(true);
   }
 
@@ -89,56 +99,50 @@ function Recurrences() {
     setEditingRecurrence(null);
   }
 
-  function handleTypeChange(type) {
-    setForm({
-      ...form,
-      type,
-      category: categories[type][0],
-    });
-  }
-
-  function handleSave(event) {
+  async function handleSave(event) {
     event.preventDefault();
 
-    const newRecurrence = {
-      id: editingRecurrence?.id || Date.now(),
-      name: form.name.trim(),
-      type: form.type,
-      value: Number(form.value),
-      category: form.category,
-      frequency: form.frequency,
-      nextDate: form.nextDate,
-    };
+    try {
+      const payload = {
+        description: form.description.trim(),
+        type: form.type,
+        amount: Number(form.amount),
+        categoryId: form.categoryId,
+        frequency: form.frequency,
+        nextDate: form.nextDate,
+      };
 
-    setRecurrences((current) => {
-      if (editingRecurrence) {
-        return current.map((item) =>
-          item.id === editingRecurrence.id
-            ? newRecurrence
-            : item
+      let savedRecurrence;
+      if (editingRecurrence && editingRecurrence.id) {
+        savedRecurrence = await api.put(`/recurrences/${editingRecurrence.id}`, payload);
+        setRecurrences((current) =>
+          current.map((item) => (item.id === editingRecurrence.id ? savedRecurrence : item))
         );
+      } else {
+        savedRecurrence = await api.post("/recurrences", payload);
+        setRecurrences((current) => [...current, savedRecurrence]);
       }
 
-      return [...current, newRecurrence];
-    });
-
-    closeModal();
-  }
-
-  function handleDelete(id) {
-    const confirmed = window.confirm(
-      "Deseja realmente excluir esta recorrência?"
-    );
-
-    if (confirmed) {
-      setRecurrences((current) =>
-        current.filter((item) => item.id !== id)
-      );
+      closeModal();
+    } catch (err) {
+      alert("Erro ao salvar recorrência: " + err.message);
     }
   }
 
-  function formatDate(date) {
-    return new Date(`${date}T12:00:00`).toLocaleDateString("pt-BR");
+  async function handleDelete(id) {
+    const confirmed = window.confirm("Deseja realmente excluir esta recorrência?");
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/recurrences/${id}`);
+      setRecurrences((current) => current.filter((item) => item.id !== id));
+    } catch (err) {
+      alert("Erro ao excluir recorrência: " + err.message);
+    }
+  }
+
+  if (isLoading) {
+    return <div className="recurrences-page"><p>Carregando recorrências...</p></div>;
   }
 
   return (
@@ -150,10 +154,7 @@ function Recurrences() {
           <p>Organize suas receitas e despesas periódicas.</p>
         </div>
 
-        <button
-          className="primary-button"
-          onClick={() => openModal()}
-        >
+        <button className="primary-button" onClick={() => openModal(null)}>
           <Plus size={17} />
           Nova recorrência
         </button>
@@ -161,31 +162,21 @@ function Recurrences() {
 
       <div className="recurrences-summary">
         <article className="panel recurrence-summary-card">
-          <div className="recurrence-summary-icon blue">
-            <Repeat size={20} />
-          </div>
+          <div className="recurrence-summary-icon blue"><Repeat size={20} /></div>
           <span>Recorrências cadastradas</span>
           <strong>{recurrences.length}</strong>
         </article>
 
         <article className="panel recurrence-summary-card">
-          <div className="recurrence-summary-icon green">
-            <TrendingUp size={20} />
-          </div>
+          <div className="recurrence-summary-icon green"><TrendingUp size={20} /></div>
           <span>Receitas por ocorrência</span>
-          <strong className="positive">
-            {formatCurrency(totalIncome)}
-          </strong>
+          <strong className="positive">{formatCurrency(totalIncome)}</strong>
         </article>
 
         <article className="panel recurrence-summary-card">
-          <div className="recurrence-summary-icon red">
-            <TrendingDown size={20} />
-          </div>
+          <div className="recurrence-summary-icon red"><TrendingDown size={20} /></div>
           <span>Despesas por ocorrência</span>
-          <strong className="negative">
-            {formatCurrency(totalExpenses)}
-          </strong>
+          <strong className="negative">{formatCurrency(totalExpenses)}</strong>
         </article>
       </div>
 
@@ -205,198 +196,133 @@ function Recurrences() {
           </div>
         ) : (
           <div className="recurrences-list">
-            {recurrences
-              .slice()
-              .sort(
-                (a, b) =>
-                  new Date(a.nextDate) - new Date(b.nextDate)
-              )
-              .map((item) => (
+            {recurrences.map((item) => {
+              const isIncome = item.type === "receita";
+              const catName = item.categoryId || "Geral";
+              const formattedDate = item.nextDate ? new Date(item.nextDate).toLocaleDateString("pt-BR") : "";
+
+              return (
                 <div className="recurrence-item" key={item.id}>
                   <div className="recurrence-item-info">
-                    <div
-                      className={`recurrence-icon ${item.type}`}
-                    >
-                      {item.type === "income" ? (
-                        <TrendingUp size={19} />
-                      ) : (
-                        <TrendingDown size={19} />
-                      )}
+                    <div className={`recurrence-icon ${isIncome ? "income" : "expense"}`}>
+                      {isIncome ? <TrendingUp size={19} /> : <TrendingDown size={19} />}
                     </div>
-
                     <div>
-                      <strong>{item.name}</strong>
-                      <small>
-                        {item.category} · {item.frequency}
-                      </small>
+                      <strong>{item.description}</strong>
+                      <small>{catName} · {item.frequency}</small>
                     </div>
                   </div>
 
                   <div className="recurrence-item-details">
-                    <strong
-                      className={
-                        item.type === "income"
-                          ? "positive"
-                          : "negative"
-                      }
-                    >
-                      {item.type === "income" ? "+" : "-"}
-                      {formatCurrency(item.value)}
+                    <strong className={isIncome ? "positive" : "negative"}>
+                      {isIncome ? "+" : "-"}
+                      {formatCurrency(item.amount)}
                     </strong>
-
                     <span>
                       <CalendarDays size={13} />
-                      {formatDate(item.nextDate)}
+                      {formattedDate}
                     </span>
                   </div>
 
                   <div className="recurrence-actions">
-                    <button
-                      className="recurrence-action edit"
-                      onClick={() => openModal(item)}
-                      title="Editar recorrência"
-                    >
+                    <button className="recurrence-action edit" onClick={() => openModal(item)} title="Editar">
                       <Pencil size={16} />
                     </button>
-
-                    <button
-                      className="recurrence-action delete"
-                      onClick={() => handleDelete(item.id)}
-                      title="Excluir recorrência"
-                    >
+                    <button className="recurrence-action delete" onClick={() => handleDelete(item.id)} title="Excluir">
                       <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
-              ))}
+              );
+            })}
           </div>
         )}
       </section>
 
       {modalOpen && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div
-            className="transaction-modal"
-            onClick={(event) => event.stopPropagation()}
-          >
+          <div className="transaction-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
-                <h2>
-                  {editingRecurrence
-                    ? "Editar recorrência"
-                    : "Nova recorrência"}
-                </h2>
+                <h2>{editingRecurrence ? "Editar recorrência" : "Nova recorrência"}</h2>
                 <p>Configure os detalhes do lançamento periódico.</p>
               </div>
-
               <button className="modal-close" onClick={closeModal}>
-                ×
+                <X size={20} />
               </button>
             </div>
 
             <form onSubmit={handleSave}>
-              <label htmlFor="recurrence-name">Descrição</label>
-              <input
-                id="recurrence-name"
-                type="text"
-                placeholder="Ex.: Aluguel"
-                value={form.name}
-                onChange={(event) =>
-                  setForm({ ...form, name: event.target.value })
-                }
-                required
-              />
-
               <label>Tipo</label>
-              <div className="transaction-type-selector">
+              <div className="type-selector">
                 <button
                   type="button"
-                  className={
-                    form.type === "expense" ? "selected expense" : ""
-                  }
-                  onClick={() => handleTypeChange("expense")}
+                  className={form.type === "despesa" ? "selected expense-option" : ""}
+                  onClick={() => setForm({ ...form, type: "despesa" })}
                 >
-                  Despesa
+                  <TrendingDown size={18} /> Despesa
                 </button>
-
                 <button
                   type="button"
-                  className={
-                    form.type === "income" ? "selected income" : ""
-                  }
-                  onClick={() => handleTypeChange("income")}
+                  className={form.type === "receita" ? "selected income-option" : ""}
+                  onClick={() => setForm({ ...form, type: "receita" })}
                 >
-                  Receita
+                  <TrendingUp size={18} /> Receita
                 </button>
               </div>
 
-              <label htmlFor="recurrence-value">Valor (R$)</label>
+              <label>Descrição</label>
               <input
-                id="recurrence-value"
+                type="text"
+                placeholder="Ex.: Aluguel"
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                required
+              />
+
+              <label>Valor (R$)</label>
+              <input
                 type="number"
                 min="0.01"
                 step="0.01"
                 placeholder="Ex.: 150"
-                value={form.value}
-                onChange={(event) =>
-                  setForm({ ...form, value: event.target.value })
-                }
+                value={form.amount}
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
                 required
               />
 
-              <label htmlFor="recurrence-category">Categoria</label>
+              <label>Categoria</label>
               <select
-                id="recurrence-category"
-                value={form.category}
-                onChange={(event) =>
-                  setForm({ ...form, category: event.target.value })
-                }
+                value={form.categoryId}
+                onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
+                required
               >
-                {categories[form.type].map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
+                {CATEGORIES.map((cat) => (
+                  <option key={cat.id} value={cat.name}>{cat.name}</option>
                 ))}
               </select>
 
-              <label htmlFor="recurrence-frequency">Frequência</label>
+              <label>Frequência</label>
               <select
-                id="recurrence-frequency"
                 value={form.frequency}
-                onChange={(event) =>
-                  setForm({ ...form, frequency: event.target.value })
-                }
+                onChange={(e) => setForm({ ...form, frequency: e.target.value })}
               >
-                {frequencies.map((frequency) => (
-                  <option key={frequency} value={frequency}>
-                    {frequency}
-                  </option>
+                {frequencies.map((freq) => (
+                  <option key={freq.value} value={freq.value}>{freq.label}</option>
                 ))}
               </select>
 
-              <label htmlFor="recurrence-date">Próxima ocorrência</label>
+              <label>Próxima ocorrência</label>
               <input
-                id="recurrence-date"
                 type="date"
                 value={form.nextDate}
-                onChange={(event) =>
-                  setForm({ ...form, nextDate: event.target.value })
-                }
+                onChange={(e) => setForm({ ...form, nextDate: e.target.value })}
                 required
               />
 
               <div className="modal-actions">
-                <button
-                  type="button"
-                  className="cancel-button"
-                  onClick={closeModal}
-                >
-                  Cancelar
-                </button>
-
-                <button type="submit" className="save-button">
-                  Salvar recorrência
-                </button>
+                <button type="button" className="cancel-button" onClick={closeModal}>Cancelar</button>
+                <button type="submit" className="save-button">Salvar recorrência</button>
               </div>
             </form>
           </div>

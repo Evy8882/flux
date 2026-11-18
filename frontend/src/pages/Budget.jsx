@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { formatCurrency } from "../utils/formatCurrency";
+import { api } from "../services/api";
 
 const categoryIcons = {
   Alimentação: ShoppingCart,
@@ -27,34 +28,49 @@ const categoryIcons = {
   Outros: CircleDollarSign,
 };
 
-function Budget({ transactions }) {
-  const [budgets, setBudgets] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("flux-budgets")) || [];
-    } catch {
-      return [];
-    }
-  });
+function Budget() {
+  const [budgets, setBudgets] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
-  const [category, setCategory] = useState("Alimentação");
+  const [categoryId, setCategoryId] = useState("");
   const [limit, setLimit] = useState("");
+  const [monthYear, setMonthYear] = useState(new Date().toISOString().slice(0, 7));
 
   useEffect(() => {
-    localStorage.setItem("flux-budgets", JSON.stringify(budgets));
-  }, [budgets]);
+    async function loadData() {
+      try {
+        const [budgetsRes, categoriesRes, transRes] = await Promise.all([
+          api.get("/budgets"),
+          api.get("/categories"),
+          api.get("/transactions"),
+        ]);
+        setBudgets(budgetsRes);
+        setCategories(categoriesRes);
+        setTransactions(transRes);
+        if (categoriesRes.length > 0) {
+          setCategoryId(categoriesRes[0].id);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dados de orçamento:", err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
 
   const currentMonth = new Date().toISOString().slice(0, 7);
 
   const monthlyExpenses = transactions.filter(
-    (item) =>
-      item.type === "expense" &&
-      item.date?.startsWith(currentMonth)
+    (item) => item.type === "despesa" && item.date?.startsWith(currentMonth)
   );
 
   const totalSpent = monthlyExpenses.reduce(
-    (total, item) => total + Number(item.value),
+    (total, item) => total + Number(item.amount),
     0
   );
 
@@ -63,16 +79,19 @@ function Budget({ transactions }) {
     0
   );
 
-  function getCategorySpent(categoryName) {
+  const catMap = new Map(categories.map((c) => [c.id, c.name]));
+
+  function getCategorySpent(catId) {
     return monthlyExpenses
-      .filter((item) => item.category === categoryName)
-      .reduce((total, item) => total + Number(item.value), 0);
+      .filter((item) => item.categoryId === catId)
+      .reduce((total, item) => total + Number(item.amount), 0);
   }
 
   function openBudgetModal(budget = null) {
     setEditingBudget(budget);
-    setCategory(budget?.category || "Alimentação");
+    setCategoryId(budget?.categoryId || categories[0]?.id || "");
     setLimit(budget ? String(budget.limit) : "");
+    setMonthYear(budget?.monthYear || currentMonth);
     setModalOpen(true);
   }
 
@@ -82,38 +101,47 @@ function Budget({ transactions }) {
     setLimit("");
   }
 
-  function handleSaveBudget(event) {
+  async function handleSaveBudget(event) {
     event.preventDefault();
 
-    const newBudget = {
-      id: editingBudget?.id || Date.now(),
-      category,
-      limit: Number(limit),
-    };
+    try {
+      const payload = {
+        categoryId,
+        limit: Number(limit),
+        monthYear,
+      };
 
-    setBudgets((current) => {
+      let savedBudget;
       if (editingBudget) {
-        return current.map((item) =>
-          item.id === editingBudget.id ? newBudget : item
+        savedBudget = await api.put(`/budgets/${editingBudget.id}`, payload);
+        setBudgets((current) =>
+          current.map((item) => (item.id === editingBudget.id ? savedBudget : item))
         );
+      } else {
+        savedBudget = await api.post("/budgets", payload);
+        setBudgets((current) => [...current, savedBudget]);
       }
 
-      return [...current, newBudget];
-    });
-
-    closeBudgetModal();
+      closeBudgetModal();
+    } catch (err) {
+      alert("Erro ao salvar orçamento: " + err.message);
+    }
   }
 
-  function handleDeleteBudget(id) {
-    const confirmed = window.confirm(
-      "Deseja realmente remover este orçamento?"
-    );
+  async function handleDeleteBudget(id) {
+    const confirmed = window.confirm("Deseja realmente remover este orçamento?");
+    if (!confirmed) return;
 
-    if (confirmed) {
-      setBudgets((current) =>
-        current.filter((item) => item.id !== id)
-      );
+    try {
+      await api.delete(`/budgets/${id}`);
+      setBudgets((current) => current.filter((item) => item.id !== id));
+    } catch (err) {
+      alert("Erro ao excluir orçamento: " + err.message);
     }
+  }
+
+  if (isLoading) {
+    return <div className="budget-page"><p>Carregando orçamentos...</p></div>;
   }
 
   return (
@@ -125,10 +153,7 @@ function Budget({ transactions }) {
           <p>Defina limites e acompanhe seus gastos mensais.</p>
         </div>
 
-        <button
-          className="primary-button"
-          onClick={() => openBudgetModal()}
-        >
+        <button className="primary-button" onClick={() => openBudgetModal()}>
           <Plus size={17} />
           Novo orçamento
         </button>
@@ -136,27 +161,19 @@ function Budget({ transactions }) {
 
       <div className="budget-summary">
         <article className="panel budget-summary-card">
-          <div className="budget-summary-icon blue">
-            <Wallet size={20} />
-          </div>
+          <div className="budget-summary-icon blue"><Wallet size={20} /></div>
           <span>Limite total</span>
           <strong>{formatCurrency(totalLimit)}</strong>
         </article>
 
         <article className="panel budget-summary-card">
-          <div className="budget-summary-icon red">
-            <ShoppingCart size={20} />
-          </div>
+          <div className="budget-summary-icon red"><ShoppingCart size={20} /></div>
           <span>Total gasto no mês</span>
-          <strong className="negative">
-            {formatCurrency(totalSpent)}
-          </strong>
+          <strong className="negative">{formatCurrency(totalSpent)}</strong>
         </article>
 
         <article className="panel budget-summary-card">
-          <div className="budget-summary-icon green">
-            <CircleDollarSign size={20} />
-          </div>
+          <div className="budget-summary-icon green"><CircleDollarSign size={20} /></div>
           <span>Disponível</span>
           <strong className={totalLimit - totalSpent < 0 ? "negative" : "positive"}>
             {formatCurrency(totalLimit - totalSpent)}
@@ -181,10 +198,10 @@ function Budget({ transactions }) {
         ) : (
           <div className="budget-list">
             {budgets.map((budget) => {
-              const Icon = categoryIcons[budget.category] || CircleDollarSign;
-              const spent = getCategorySpent(budget.category);
-              const percentage =
-                budget.limit > 0 ? (spent / budget.limit) * 100 : 0;
+              const catName = catMap.get(budget.categoryId) || "Geral";
+              const Icon = categoryIcons[catName] || CircleDollarSign;
+              const spent = getCategorySpent(budget.categoryId);
+              const percentage = budget.limit > 0 ? (spent / budget.limit) * 100 : 0;
               const exceeded = percentage > 100;
               const warning = percentage >= 80 && !exceeded;
 
@@ -196,10 +213,9 @@ function Budget({ transactions }) {
                         <Icon size={19} />
                       </div>
                       <div>
-                        <strong>{budget.category}</strong>
+                        <strong>{catName}</strong>
                         <small>
-                          {formatCurrency(spent)} de{" "}
-                          {formatCurrency(budget.limit)}
+                          {formatCurrency(spent)} de {formatCurrency(budget.limit)} ({budget.monthYear})
                         </small>
                       </div>
                     </div>
@@ -212,7 +228,7 @@ function Budget({ transactions }) {
                       <button
                         className="budget-action edit"
                         onClick={() => openBudgetModal(budget)}
-                        title="Editar orçamento"
+                        title="Editar"
                       >
                         <Pencil size={16} />
                       </button>
@@ -220,7 +236,7 @@ function Budget({ transactions }) {
                       <button
                         className="budget-action delete"
                         onClick={() => handleDeleteBudget(budget.id)}
-                        title="Excluir orçamento"
+                        title="Excluir"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -239,15 +255,7 @@ function Budget({ transactions }) {
                   {exceeded && (
                     <div className="budget-alert exceeded">
                       <AlertTriangle size={14} />
-                      Limite ultrapassado em{" "}
-                      {formatCurrency(spent - budget.limit)}
-                    </div>
-                  )}
-
-                  {warning && (
-                    <div className="budget-alert warning">
-                      <AlertTriangle size={14} />
-                      Você já utilizou boa parte deste orçamento.
+                      Limite ultrapassado em {formatCurrency(spent - budget.limit)}
                     </div>
                   )}
                 </div>
@@ -259,67 +267,51 @@ function Budget({ transactions }) {
 
       {modalOpen && (
         <div className="modal-overlay" onClick={closeBudgetModal}>
-          <div
-            className="transaction-modal"
-            onClick={(event) => event.stopPropagation()}
-          >
+          <div className="transaction-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
-                <h2>
-                  {editingBudget ? "Editar orçamento" : "Novo orçamento"}
-                </h2>
+                <h2>{editingBudget ? "Editar orçamento" : "Novo orçamento"}</h2>
                 <p>Defina um limite mensal para a categoria.</p>
               </div>
-
-              <button className="modal-close" onClick={closeBudgetModal}>
-                ×
-              </button>
+              <button className="modal-close" onClick={closeBudgetModal}>×</button>
             </div>
 
             <form onSubmit={handleSaveBudget}>
-              <label htmlFor="budget-category">Categoria</label>
+              <label>Categoria</label>
               <select
-                id="budget-category"
-                value={category}
-                onChange={(event) => setCategory(event.target.value)}
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
                 required
               >
-                {Object.keys(categoryIcons).map((item) => {
-                  const alreadyExists = budgets.some(
-                    (budget) =>
-                      budget.category === item &&
-                      budget.id !== editingBudget?.id
-                  );
-
-                  return (
-                    <option key={item} value={item} disabled={alreadyExists}>
-                      {item}{alreadyExists ? " (já cadastrado)" : ""}
-                    </option>
-                  );
-                })}
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
               </select>
 
-              <label htmlFor="budget-limit">Limite mensal (R$)</label>
+              <label>Limite mensal (R$)</label>
               <input
-                id="budget-limit"
                 type="number"
                 min="0.01"
                 step="0.01"
                 placeholder="Ex.: 500"
                 value={limit}
-                onChange={(event) => setLimit(event.target.value)}
+                onChange={(e) => setLimit(e.target.value)}
+                required
+              />
+
+              <label>Mês e Ano (YYYY-MM)</label>
+              <input
+                type="text"
+                placeholder="2026-11"
+                value={monthYear}
+                onChange={(e) => setMonthYear(e.target.value)}
                 required
               />
 
               <div className="modal-actions">
-                <button
-                  type="button"
-                  className="cancel-button"
-                  onClick={closeBudgetModal}
-                >
+                <button type="button" className="cancel-button" onClick={closeBudgetModal}>
                   Cancelar
                 </button>
-
                 <button type="submit" className="save-button">
                   Salvar orçamento
                 </button>

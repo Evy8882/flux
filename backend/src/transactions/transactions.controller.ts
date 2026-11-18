@@ -4,7 +4,6 @@ import { TransacaoModel } from "../db/models.js";
 import type { TipoTransacao } from "../db/models.js";
 
 // ─── GET /api/transactions ────────────────────────────────────────────────────
-// Query params opcionais: mes, ano, tipo
 
 export async function listTransactions(req: Request, res: Response): Promise<void> {
   const { userId } = req.user!;
@@ -41,7 +40,7 @@ export async function listTransactions(req: Request, res: Response): Promise<voi
     transactions.map((t) => ({
       id: t._id.toString(),
       userId: t.usuarioId.toString(),
-      categoryId: t.categoriaId.toString(),
+      categoryId: t.categoryId,
       type: t.tipo,
       amount: t.valor,
       description: t.descricao,
@@ -65,8 +64,7 @@ export async function createTransaction(req: Request, res: Response): Promise<vo
 
   if (!categoryId || !type || amount === undefined || !description || !date) {
     res.status(400).json({
-      error:
-        "Os campos categoryId, type, amount, description e date são obrigatórios.",
+      error: "Os campos categoryId (nome), type, amount, description e date são obrigatórios.",
     });
     return;
   }
@@ -81,14 +79,9 @@ export async function createTransaction(req: Request, res: Response): Promise<vo
     return;
   }
 
-  if (!Types.ObjectId.isValid(categoryId)) {
-    res.status(400).json({ error: "categoryId inválido." });
-    return;
-  }
-
   const transaction = await TransacaoModel.create({
     usuarioId: new Types.ObjectId(userId),
-    categoriaId: new Types.ObjectId(categoryId),
+    categoryId,
     tipo: type,
     valor: amount,
     descricao: description,
@@ -98,7 +91,7 @@ export async function createTransaction(req: Request, res: Response): Promise<vo
   res.status(201).json({
     id: transaction._id.toString(),
     userId: transaction.usuarioId.toString(),
-    categoryId: transaction.categoriaId.toString(),
+    categoryId: transaction.categoryId,
     type: transaction.tipo,
     amount: transaction.valor,
     description: transaction.descricao,
@@ -131,7 +124,7 @@ export async function getTransaction(req: Request, res: Response): Promise<void>
   res.json({
     id: transaction._id.toString(),
     userId: transaction.usuarioId.toString(),
-    categoryId: transaction.categoriaId.toString(),
+    categoryId: transaction.categoryId,
     type: transaction.tipo,
     amount: transaction.valor,
     description: transaction.descricao,
@@ -158,19 +151,9 @@ export async function updateTransaction(req: Request, res: Response): Promise<vo
     return;
   }
 
-  if (type && type !== "receita" && type !== "despesa") {
-    res.status(400).json({ error: "type deve ser 'receita' ou 'despesa'." });
-    return;
-  }
-
-  if (amount !== undefined && (typeof amount !== "number" || amount <= 0)) {
-    res.status(400).json({ error: "amount deve ser um número positivo." });
-    return;
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const patch: Record<string, any> = {};
-  if (categoryId) patch["categoriaId"] = new Types.ObjectId(categoryId);
+  if (categoryId) patch["categoryId"] = categoryId;
   if (type) patch["tipo"] = type;
   if (amount !== undefined) patch["valor"] = amount;
   if (description) patch["descricao"] = description;
@@ -190,7 +173,7 @@ export async function updateTransaction(req: Request, res: Response): Promise<vo
   res.json({
     id: updated._id.toString(),
     userId: updated.usuarioId.toString(),
-    categoryId: updated.categoriaId.toString(),
+    categoryId: updated.categoryId,
     type: updated.tipo,
     amount: updated.valor,
     description: updated.descricao,

@@ -21,6 +21,11 @@ async function request(endpoint, options = {}) {
     throw new Error("Sessão expirada. Faça login novamente.");
   }
 
+  // Algumas rotas de delete retornam 204 sem conteúdo JSON
+  if (response.status === 204) {
+    return null;
+  }
+
   const data = await response.json();
 
   if (!response.ok) {

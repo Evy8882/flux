@@ -11,59 +11,52 @@ import {
 } from "lucide-react";
 
 import { formatCurrency } from "../utils/formatCurrency";
+import { api } from "../services/api";
 
 function Goals() {
-  const [goals, setGoals] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("flux-goals")) || [];
-    } catch {
-      return [];
-    }
-  });
+  const [goals, setGoals] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
 
   const [form, setForm] = useState({
-    name: "",
-    target: "",
-    saved: "",
+    title: "",
+    targetAmount: "",
+    currentAmount: "",
     deadline: "",
   });
 
   useEffect(() => {
-    localStorage.setItem("flux-goals", JSON.stringify(goals));
-  }, [goals]);
+    async function loadGoals() {
+      try {
+        const data = await api.get("/goals");
+        setGoals(data);
+      } catch (err) {
+        console.error("Erro ao carregar metas:", err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadGoals();
+  }, []);
 
-  const totalTarget = goals.reduce(
-    (total, goal) => total + Number(goal.target),
-    0
-  );
-
-  const totalSaved = goals.reduce(
-    (total, goal) => total + Number(goal.saved),
-    0
-  );
+  const totalTarget = goals.reduce((total, goal) => total + Number(goal.targetAmount), 0);
+  const totalSaved = goals.reduce((total, goal) => total + Number(goal.currentAmount), 0);
 
   function openModal(goal = null) {
-    setEditingGoal(goal);
-
-    setForm(
-      goal
-        ? {
-            name: goal.name,
-            target: String(goal.target),
-            saved: String(goal.saved),
-            deadline: goal.deadline,
-          }
-        : {
-            name: "",
-            target: "",
-            saved: "",
-            deadline: "",
-          }
-    );
-
+    if (goal && goal.id) {
+      setEditingGoal(goal);
+      setForm({
+        title: goal.title || "",
+        targetAmount: String(goal.targetAmount || ""),
+        currentAmount: String(goal.currentAmount || ""),
+        deadline: goal.deadline ? goal.deadline.slice(0, 10) : "",
+      });
+    } else {
+      setEditingGoal(null);
+      setForm({ title: "", targetAmount: "", currentAmount: "", deadline: "" });
+    }
     setModalOpen(true);
   }
 
@@ -72,38 +65,50 @@ function Goals() {
     setEditingGoal(null);
   }
 
-  function handleSave(event) {
+  async function handleSave(event) {
     event.preventDefault();
 
-    const newGoal = {
-      id: editingGoal?.id || Date.now(),
-      name: form.name.trim(),
-      target: Number(form.target),
-      saved: Number(form.saved || 0),
-      deadline: form.deadline,
-    };
+    try {
+      const payload = {
+        title: form.title.trim(),
+        targetAmount: Number(form.targetAmount),
+        currentAmount: Number(form.currentAmount || 0),
+        deadline: form.deadline,
+      };
 
-    setGoals((current) => {
-      if (editingGoal) {
-        return current.map((goal) =>
-          goal.id === editingGoal.id ? newGoal : goal
+      let savedGoal;
+      
+      // Separado de forma estrita para evitar erros de rota
+      if (editingGoal && editingGoal.id) {
+        savedGoal = await api.put(`/goals/${editingGoal.id}`, payload);
+        setGoals((current) =>
+          current.map((g) => (g.id === editingGoal.id ? savedGoal : g))
         );
+      } else {
+        savedGoal = await api.post("/goals", payload);
+        setGoals((current) => [...current, savedGoal]);
       }
 
-      return [...current, newGoal];
-    });
-
-    closeModal();
+      closeModal();
+    } catch (err) {
+      alert("Erro ao salvar meta: " + err.message);
+    }
   }
 
-  function handleDelete(id) {
-    const confirmed = window.confirm(
-      "Deseja realmente excluir esta meta?"
-    );
+  async function handleDelete(id) {
+    const confirmed = window.confirm("Deseja realmente excluir esta meta?");
+    if (!confirmed) return;
 
-    if (confirmed) {
+    try {
+      await api.delete(`/goals/${id}`);
       setGoals((current) => current.filter((goal) => goal.id !== id));
+    } catch (err) {
+      alert("Erro ao excluir meta: " + err.message);
     }
+  }
+
+  if (isLoading) {
+    return <div className="goals-page"><p>Carregando metas...</p></div>;
   }
 
   return (
@@ -115,7 +120,7 @@ function Goals() {
           <p>Defina objetivos e acompanhe suas conquistas.</p>
         </div>
 
-        <button className="primary-button" onClick={() => openModal()}>
+        <button className="primary-button" onClick={() => openModal(null)}>
           <Plus size={17} />
           Nova meta
         </button>
@@ -123,27 +128,19 @@ function Goals() {
 
       <div className="goals-summary">
         <article className="panel goals-summary-card">
-          <div className="goals-summary-icon blue">
-            <Target size={20} />
-          </div>
+          <div className="goals-summary-icon blue"><Target size={20} /></div>
           <span>Metas cadastradas</span>
           <strong>{goals.length}</strong>
         </article>
 
         <article className="panel goals-summary-card">
-          <div className="goals-summary-icon green">
-            <CircleDollarSign size={20} />
-          </div>
+          <div className="goals-summary-icon green"><CircleDollarSign size={20} /></div>
           <span>Total acumulado</span>
-          <strong className="positive">
-            {formatCurrency(totalSaved)}
-          </strong>
+          <strong className="positive">{formatCurrency(totalSaved)}</strong>
         </article>
 
         <article className="panel goals-summary-card">
-          <div className="goals-summary-icon purple">
-            <Trophy size={20} />
-          </div>
+          <div className="goals-summary-icon purple"><Trophy size={20} /></div>
           <span>Valor total das metas</span>
           <strong>{formatCurrency(totalTarget)}</strong>
         </article>
@@ -166,11 +163,7 @@ function Goals() {
         ) : (
           <div className="goals-list">
             {goals.map((goal) => {
-              const percentage =
-                goal.target > 0
-                  ? (goal.saved / goal.target) * 100
-                  : 0;
-
+              const percentage = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
               const completed = percentage >= 100;
 
               return (
@@ -178,40 +171,22 @@ function Goals() {
                   <div className="goal-item-top">
                     <div className="goal-info">
                       <div className="goal-icon">
-                        {completed ? (
-                          <Trophy size={20} />
-                        ) : (
-                          <Target size={20} />
-                        )}
+                        {completed ? <Trophy size={20} /> : <Target size={20} />}
                       </div>
-
                       <div>
-                        <strong>{goal.name}</strong>
+                        <strong>{goal.title}</strong>
                         <small>
-                          {formatCurrency(goal.saved)} de{" "}
-                          {formatCurrency(goal.target)}
+                          {formatCurrency(goal.currentAmount)} de {formatCurrency(goal.targetAmount)}
                         </small>
                       </div>
                     </div>
 
                     <div className="goal-actions">
-                      <strong className={completed ? "positive" : ""}>
-                        {Math.round(percentage)}%
-                      </strong>
-
-                      <button
-                        className="goal-action edit"
-                        onClick={() => openModal(goal)}
-                        title="Editar meta"
-                      >
+                      <strong className={completed ? "positive" : ""}>{Math.round(percentage)}%</strong>
+                      <button className="goal-action edit" onClick={() => openModal(goal)} title="Editar">
                         <Pencil size={16} />
                       </button>
-
-                      <button
-                        className="goal-action delete"
-                        onClick={() => handleDelete(goal.id)}
-                        title="Excluir meta"
-                      >
+                      <button className="goal-action delete" onClick={() => handleDelete(goal.id)} title="Excluir">
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -219,30 +194,19 @@ function Goals() {
 
                   <div className="goal-progress-track">
                     <div
-                      className={`goal-progress-fill ${
-                        completed ? "completed" : ""
-                      }`}
-                      style={{
-                        width: `${Math.min(percentage, 100)}%`,
-                      }}
+                      className={`goal-progress-fill ${completed ? "completed" : ""}`}
+                      style={{ width: `${Math.min(percentage, 100)}%` }}
                     />
                   </div>
 
                   <div className="goal-footer">
                     <span>
-                      {completed
-                        ? "Meta alcançada!"
-                        : `Faltam ${formatCurrency(
-                            Math.max(goal.target - goal.saved, 0)
-                          )}`}
+                      {completed ? "Meta alcançada!" : `Faltam ${formatCurrency(Math.max(goal.targetAmount - goal.currentAmount, 0))}`}
                     </span>
-
                     {goal.deadline && (
                       <span>
                         <CalendarDays size={13} />
-                        {new Date(
-                          `${goal.deadline}T12:00:00`
-                        ).toLocaleDateString("pt-BR")}
+                        {new Date(goal.deadline).toLocaleDateString("pt-BR")}
                       </span>
                     )}
                   </div>
@@ -255,83 +219,57 @@ function Goals() {
 
       {modalOpen && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div
-            className="transaction-modal"
-            onClick={(event) => event.stopPropagation()}
-          >
+          <div className="transaction-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
                 <h2>{editingGoal ? "Editar meta" : "Nova meta"}</h2>
                 <p>Preencha os dados do seu objetivo.</p>
               </div>
-
-              <button className="modal-close" onClick={closeModal}>
-                ×
-              </button>
+              <button className="modal-close" onClick={closeModal}>×</button>
             </div>
 
             <form onSubmit={handleSave}>
-              <label htmlFor="goal-name">Nome da meta</label>
+              <label>Nome da meta</label>
               <input
-                id="goal-name"
                 type="text"
                 placeholder="Ex.: Comprar um notebook"
-                value={form.name}
-                onChange={(event) =>
-                  setForm({ ...form, name: event.target.value })
-                }
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
                 required
               />
 
-              <label htmlFor="goal-target">Valor desejado (R$)</label>
+              <label>Valor desejado (R$)</label>
               <input
-                id="goal-target"
                 type="number"
                 min="0.01"
                 step="0.01"
                 placeholder="Ex.: 5000"
-                value={form.target}
-                onChange={(event) =>
-                  setForm({ ...form, target: event.target.value })
-                }
+                value={form.targetAmount}
+                onChange={(e) => setForm({ ...form, targetAmount: e.target.value })}
                 required
               />
 
-              <label htmlFor="goal-saved">Valor já acumulado (R$)</label>
+              <label>Valor já acumulado (R$)</label>
               <input
-                id="goal-saved"
                 type="number"
                 min="0"
                 step="0.01"
                 placeholder="Ex.: 1000"
-                value={form.saved}
-                onChange={(event) =>
-                  setForm({ ...form, saved: event.target.value })
-                }
+                value={form.currentAmount}
+                onChange={(e) => setForm({ ...form, currentAmount: e.target.value })}
               />
 
-              <label htmlFor="goal-deadline">Prazo (opcional)</label>
+              <label>Prazo</label>
               <input
-                id="goal-deadline"
                 type="date"
                 value={form.deadline}
-                onChange={(event) =>
-                  setForm({ ...form, deadline: event.target.value })
-                }
+                onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+                required
               />
 
               <div className="modal-actions">
-                <button
-                  type="button"
-                  className="cancel-button"
-                  onClick={closeModal}
-                >
-                  Cancelar
-                </button>
-
-                <button type="submit" className="save-button">
-                  Salvar meta
-                </button>
+                <button type="button" className="cancel-button" onClick={closeModal}>Cancelar</button>
+                <button type="submit" className="save-button">Salvar meta</button>
               </div>
             </form>
           </div>
