@@ -1,4 +1,5 @@
 import "../pages/Budget.css";
+
 import { useEffect, useState } from "react";
 import {
   Wallet,
@@ -13,6 +14,7 @@ import {
   GraduationCap,
   CircleDollarSign,
   AlertTriangle,
+  X,
 } from "lucide-react";
 
 import { formatCurrency } from "../utils/formatCurrency";
@@ -146,19 +148,6 @@ function Budget() {
 
   return (
     <div className="budget-page">
-      <div className="welcome">
-        <div>
-          <span className="eyebrow">CONTROLE FINANCEIRO</span>
-          <h1>Orçamento</h1>
-          <p>Defina limites e acompanhe seus gastos mensais.</p>
-        </div>
-
-        <button className="primary-button" onClick={() => openBudgetModal()}>
-          <Plus size={17} />
-          Novo orçamento
-        </button>
-      </div>
-
       <div className="budget-summary">
         <article className="panel budget-summary-card">
           <div className="budget-summary-icon blue"><Wallet size={20} /></div>
@@ -182,11 +171,16 @@ function Budget() {
       </div>
 
       <section className="panel budget-panel">
-        <div className="panel-heading">
+        <div className="panel-heading statement-panel-heading">
           <div>
             <h2>Orçamentos por categoria</h2>
             <p>Acompanhe seus limites individuais.</p>
           </div>
+
+          <button className="statement-add-button" onClick={() => openBudgetModal()}>
+            <Plus size={17} />
+            Novo orçamento
+          </button>
         </div>
 
         {budgets.length === 0 ? (
@@ -273,7 +267,9 @@ function Budget() {
                 <h2>{editingBudget ? "Editar orçamento" : "Novo orçamento"}</h2>
                 <p>Defina um limite mensal para a categoria.</p>
               </div>
-              <button className="modal-close" onClick={closeBudgetModal}>×</button>
+              <button className="modal-close" onClick={closeBudgetModal}>
+                <X size={20} />
+              </button>
             </div>
 
             <form onSubmit={handleSaveBudget}>

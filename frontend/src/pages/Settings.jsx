@@ -1,4 +1,5 @@
-import "./Settings.css";
+import "../pages/Settings.css";
+
 import { useEffect, useState } from "react";
 import {
     UserRound,

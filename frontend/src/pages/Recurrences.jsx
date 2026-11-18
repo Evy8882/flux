@@ -1,5 +1,6 @@
 import "../pages/Recurrences.css";
-import { useEffect, useState, useMemo } from "react";
+
+import { useEffect, useState } from "react";
 import {
   Repeat,
   Plus,
@@ -147,19 +148,6 @@ function Recurrences() {
 
   return (
     <div className="recurrences-page">
-      <div className="welcome">
-        <div>
-          <span className="eyebrow">CONTROLE AUTOMÁTICO</span>
-          <h1>Recorrências</h1>
-          <p>Organize suas receitas e despesas periódicas.</p>
-        </div>
-
-        <button className="primary-button" onClick={() => openModal(null)}>
-          <Plus size={17} />
-          Nova recorrência
-        </button>
-      </div>
-
       <div className="recurrences-summary">
         <article className="panel recurrence-summary-card">
           <div className="recurrence-summary-icon blue"><Repeat size={20} /></div>
@@ -181,11 +169,19 @@ function Recurrences() {
       </div>
 
       <section className="panel recurrences-panel">
-        <div className="panel-heading">
+        <div className="panel-heading statement-panel-heading">
           <div>
             <h2>Seus lançamentos recorrentes</h2>
             <p>Consulte e gerencie seus compromissos financeiros.</p>
           </div>
+
+          <button
+            className="statement-add-button"
+            onClick={() => openModal(null)}
+          >
+            <Plus size={17} />
+            Nova recorrência
+          </button>
         </div>
 
         {recurrences.length === 0 ? (

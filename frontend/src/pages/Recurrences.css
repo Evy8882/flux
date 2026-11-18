@@ -1,39 +1,38 @@
-
 /* PÁGINA DE RECORRÊNCIAS */
 
 .recurrences-page {
   width: 100%;
+  max-width: 1200px;
   min-width: 0;
-  padding: 8px 10px 24px;
+  padding: 24px 24px 32px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-.recurrences-page .welcome {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 16px;
-  margin-bottom: 24px;
-}
+/* BOTÃO DE ADICIONAR (PADRONIZADO) */
 
-.recurrences-page .primary-button {
-  display: flex;
+.statement-add-button {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  padding: 11px 17px;
-  color: white;
-  background: var(--blue);
-  border: none;
+  gap: 8px;
+  padding: 11px 16px;
+  border: 1px solid #4385f5;
   border-radius: 9px;
-  font-size: 12px;
+  background: #4385f5;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
   white-space: nowrap;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
-.recurrences-page .primary-button:hover {
-  background: #3274df;
+.statement-add-button:hover {
+  background: #3475e5;
+  box-shadow: 0 4px 14px rgba(67, 133, 245, 0.2);
+  transform: translateY(-1px);
 }
 
 /* CARDS DE RESUMO */
@@ -55,13 +54,14 @@
   min-height: 155px;
   padding: 23px 24px;
   background: linear-gradient(145deg, #131d2b, #111722);
-  border: 1px solid #202d40;
+  border: 1px solid #202a3a;
   border-radius: 14px;
   transition: border-color 0.2s ease, transform 0.2s ease;
+  box-sizing: border-box;
 }
 
 .recurrence-summary-card:hover {
-  border-color: #30435e;
+  border-color: #34445d;
   transform: translateY(-2px);
 }
 
@@ -79,23 +79,23 @@
 }
 
 .recurrence-summary-icon.green {
-  color: var(--green);
+  color: #36c98f;
   background: rgba(54, 201, 143, 0.13);
 }
 
 .recurrence-summary-icon.red {
-  color: var(--red);
-  background: rgba(241, 109, 120, 0.12);
+  color: #f16d78;
+  background: rgba(241, 109, 120, 0.13);
 }
 
 .recurrence-summary-card > span {
-  color: var(--muted);
+  color: #8995a8;
   font-size: 12px;
   font-weight: 500;
 }
 
 .recurrence-summary-card > strong {
-  color: var(--text);
+  color: #e8edf7;
   font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -103,11 +103,11 @@
 }
 
 .recurrence-summary-card > strong.positive {
-  color: var(--green);
+  color: #36c98f;
 }
 
 .recurrence-summary-card > strong.negative {
-  color: var(--red);
+  color: #f16d78;
 }
 
 /* PAINEL PRINCIPAL */
@@ -116,23 +116,30 @@
   width: 100%;
   min-width: 0;
   padding: 26px 28px;
-  background: #111a27;
-  border: 1px solid #202d40;
-  border-radius: 14px;
+  background: #111722;
+  border: 1px solid #202a3a;
+  border-radius: 15px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
 }
 
-.recurrences-panel .panel-heading {
-  margin-bottom: 15px;
+.statement-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
 }
 
-.recurrences-panel .panel-heading h2 {
-  color: var(--text);
+.statement-panel-heading h2 {
+  color: #edf2fb;
   font-size: 16px;
   font-weight: 650;
+  margin: 0;
 }
 
-.recurrences-panel .panel-heading p {
-  color: var(--muted);
+.statement-panel-heading p {
+  color: #8995a8;
   font-size: 12px;
   margin-top: 5px;
 }
@@ -147,24 +154,24 @@
   gap: 12px;
   min-height: 250px;
   padding: 30px 20px;
-  color: var(--muted);
+  color: #8995a8;
   text-align: center;
 }
 
 .recurrences-empty svg {
-  color: #648fd2;
+  color: #4385f5;
   margin-bottom: 3px;
 }
 
 .recurrences-empty strong {
-  color: var(--text);
+  color: #edf2fb;
   font-size: 14px;
   font-weight: 600;
 }
 
 .recurrences-empty p {
   max-width: 320px;
-  color: var(--muted);
+  color: #8995a8;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -182,7 +189,7 @@
   align-items: center;
   gap: 22px;
   padding: 21px 5px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid #202a38;
   transition: background 0.2s ease;
 }
 
@@ -208,12 +215,12 @@
 }
 
 .recurrence-icon.income {
-  color: var(--green);
-  background: rgba(54, 201, 143, 0.13);
+  color: #36c98f;
+  background: rgba(54, 201, 143, 0.12);
 }
 
 .recurrence-icon.expense {
-  color: var(--red);
+  color: #f16d78;
   background: rgba(241, 109, 120, 0.12);
 }
 
@@ -225,14 +232,14 @@
 }
 
 .recurrence-item-info strong {
-  color: var(--text);
+  color: #e3e9f3;
   font-size: 13px;
   font-weight: 600;
   overflow-wrap: anywhere;
 }
 
 .recurrence-item-info small {
-  color: var(--muted);
+  color: #7f8ca1;
   font-size: 11px;
 }
 
@@ -252,18 +259,18 @@
 }
 
 .recurrence-item-details .positive {
-  color: var(--green);
+  color: #36c98f;
 }
 
 .recurrence-item-details .negative {
-  color: var(--red);
+  color: #f16d78;
 }
 
 .recurrence-item-details span {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--muted);
+  color: #7f8ca1;
   font-size: 11px;
 }
 
@@ -280,22 +287,22 @@
   height: 35px;
   display: grid;
   place-items: center;
-  border: 1px solid #263449;
+  border: 1px solid #293548;
   border-radius: 9px;
-  background: #151f2d;
-  color: var(--muted);
+  background: #0d131e;
+  color: #8995a8;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .recurrence-action.edit:hover {
-  color: var(--blue);
+  color: #4385f5;
   background: rgba(67, 133, 245, 0.12);
   border-color: #365580;
 }
 
 .recurrence-action.delete:hover {
-  color: var(--red);
+  color: #f16d78;
   background: rgba(241, 109, 120, 0.1);
   border-color: #63313c;
 }
@@ -310,7 +317,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: #000000a6;
+  background: rgba(5, 8, 13, 0.75);
   backdrop-filter: blur(4px);
 }
 
@@ -321,9 +328,9 @@
   overflow-y: auto;
   padding: 25px;
   background: #111722;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: 0 20px 60px #00000055;
+  border: 1px solid #202a3a;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 }
 
 .recurrences-page .modal-header {
@@ -335,13 +342,13 @@
 }
 
 .recurrences-page .modal-header h2 {
-  color: var(--text);
+  color: #edf2fb;
   font-size: 18px;
   margin-bottom: 7px;
 }
 
 .recurrences-page .modal-header p {
-  color: var(--muted);
+  color: #8995a8;
   font-size: 11px;
 }
 
@@ -351,7 +358,7 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  color: var(--muted);
+  color: #8995a8;
   background: transparent;
   border: none;
   border-radius: 6px;
@@ -361,7 +368,7 @@
 
 .recurrences-page .modal-close:hover {
   color: white;
-  background: var(--surface-hover);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* FORMULÁRIO */
@@ -372,7 +379,7 @@
 }
 
 .recurrences-page .transaction-modal label {
-  color: #b9c5d6;
+  color: #c5cede;
   font-size: 11px;
   font-weight: 600;
   margin-bottom: 8px;
@@ -384,54 +391,60 @@
   height: 42px;
   padding: 0 12px;
   margin-bottom: 17px;
-  color: var(--text);
-  background: #0b1018;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  color: #e8edf7;
+  background: #0d131e;
+  border: 1px solid #293548;
+  border-radius: 9px;
   outline: none;
   font-size: 12px;
   color-scheme: dark;
+  box-sizing: border-box;
 }
 
 .recurrences-page .transaction-modal input:focus,
 .recurrences-page .transaction-modal select:focus {
-  border-color: var(--blue);
+  border-color: #4385f5;
 }
 
 .recurrences-page .transaction-modal input::placeholder {
-  color: #65738a;
+  color: #657187;
 }
 
 /* TIPO DE LANÇAMENTO */
 
-.recurrences-page .transaction-type-selector {
+.recurrences-page .type-selector {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-bottom: 18px;
 }
 
-.recurrences-page .transaction-type-selector button {
+.recurrences-page .type-selector button {
   height: 39px;
-  color: var(--muted);
-  background: #0b1018;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #8995a8;
+  background: #0d131e;
+  border: 1px solid #293548;
+  border-radius: 9px;
   font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.recurrences-page .transaction-type-selector button.selected.expense {
-  color: var(--red);
+.recurrences-page .type-selector button.selected.expense-option {
+  color: #f16d78;
   background: rgba(241, 109, 120, 0.12);
-  border-color: #71404a;
+  border-color: #f16d78;
 }
 
-.recurrences-page .transaction-type-selector button.selected.income {
-  color: var(--green);
+.recurrences-page .type-selector button.selected.income-option {
+  color: #36c98f;
   background: rgba(54, 201, 143, 0.12);
-  border-color: #28644e;
+  border-color: #36c98f;
 }
 
 /* AÇÕES DO MODAL */
@@ -443,34 +456,36 @@
   margin-top: 8px;
 }
 
-.recurrences-page .modal-actions button {
-  min-height: 39px;
-  padding: 0 16px;
-  border-radius: 8px;
-  font-size: 11px;
+.recurrences-page .cancel-button {
+  padding: 11px 16px;
+  color: #c5cede;
+  background: transparent;
+  border: 1px solid #293548;
+  border-radius: 9px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.recurrences-page .cancel-button {
-  color: #aab6c8;
-  background: #182130;
-  border: 1px solid var(--border);
+  transition: background 0.2s;
 }
 
 .recurrences-page .cancel-button:hover {
-  background: #222e40;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .recurrences-page .save-button {
+  padding: 11px 18px;
   color: white;
-  background: var(--blue);
-  border: 1px solid var(--blue);
+  background: #4385f5;
+  border: 1px solid #4385f5;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 .recurrences-page .save-button:hover {
-  background: #3274df;
+  background: #3475e5;
 }
 
 /* RESPONSIVIDADE */
@@ -485,16 +500,17 @@
   }
 }
 
-@media (max-width: 650px) {
+@media (max-width: 850px) {
   .recurrences-page {
-    padding: 4px 0 20px;
+    padding: 16px 12px 24px;
   }
 
-  .recurrences-page .welcome {
-    justify-content: flex-start;
-    margin-bottom: 18px;
+  .recurrences-panel {
+    padding: 23px;
   }
+}
 
+@media (max-width: 650px) {
   .recurrences-summary {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -507,6 +523,15 @@
 
   .recurrences-panel {
     padding: 20px 17px;
+  }
+
+  .statement-panel-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .statement-add-button {
+    width: 100%;
   }
 
   .recurrence-item {
