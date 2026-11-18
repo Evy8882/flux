@@ -129,7 +129,6 @@ function Statement() {
           Nova transação
         </button>
       </div>
-
       <div className="statement-summary">
         <article className="panel statement-card">
           <div className="statement-card-icon income"><TrendingUp size={20} /></div>

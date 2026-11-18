@@ -1,62 +1,63 @@
 
-/* ================================
-   ESTRUTURA DO EXTRATO
-================================ */
+/* PÁGINA DO EXTRATO */
 
 .statement-page {
   width: 100%;
   min-width: 0;
+  padding: 8px 10px 24px;
 }
 
-.statement-page .welcome {
-  margin-bottom: 28px;
-}
-
-/* ================================
-   RESUMO FINANCEIRO
-================================ */
+/* RESUMO FINANCEIRO */
 
 .statement-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 17px;
-  margin-bottom: 22px;
+  gap: 18px;
+  margin-bottom: 24px;
+  padding: 0 2px;
   width: 100%;
 }
 
 .statement-card {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 16px;
   min-width: 0;
-  padding: 21px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  min-height: 125px;
+  padding: 22px 24px;
+  background: linear-gradient(145deg, #131d2b, #111722);
+  border: 1px solid #202d40;
+  border-radius: 14px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.statement-card:hover {
+  border-color: #30435e;
+  transform: translateY(-2px);
 }
 
 .statement-card-icon {
-  width: 42px;
-  height: 42px;
+  width: 43px;
+  height: 43px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  border-radius: 10px;
+  border-radius: 11px;
 }
 
 .statement-card-icon.income {
   color: var(--green);
-  background: #17382f;
+  background: rgba(54, 201, 143, 0.13);
 }
 
 .statement-card-icon.expense {
   color: var(--red);
-  background: #3b252d;
+  background: rgba(241, 109, 120, 0.12);
 }
 
 .statement-card-icon.balance {
-  color: #6da3ff;
-  background: #1b3152;
+  color: #76a8ff;
+  background: rgba(67, 133, 245, 0.14);
 }
 
 .statement-card > div:last-child {
@@ -66,15 +67,17 @@
 .statement-card span {
   display: block;
   color: var(--muted);
-  font-size: 11px;
-  margin-bottom: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 8px;
 }
 
 .statement-card strong {
   display: block;
   color: var(--text);
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 700;
+  letter-spacing: -0.4px;
   overflow-wrap: anywhere;
 }
 
@@ -86,51 +89,73 @@
   color: var(--red);
 }
 
-/* ================================
-   PAINEL DE TRANSAÇÕES
-================================ */
+/* PAINEL DE TRANSAÇÕES */
 
 .statement-panel {
   width: 100%;
   min-width: 0;
+  padding: 26px 28px;
+  background: #111a27;
+  border: 1px solid #202d40;
+  border-radius: 14px;
 }
 
 .statement-panel .panel-heading {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
-/* ================================
-   FILTROS E PESQUISA
-================================ */
+.statement-panel .panel-heading h2 {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.statement-panel .panel-heading p {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+/* FILTROS E PESQUISA */
 
 .statement-filters {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  margin-bottom: 21px;
 }
 
 .statement-search {
+  position: relative;
+  display: flex;
+  align-items: center;
   flex: 1;
   min-width: 180px;
-  position: relative;
+}
+
+.statement-search > svg {
+  position: absolute;
+  left: 13px;
+  color: var(--muted);
+  pointer-events: none;
 }
 
 .statement-search input {
   width: 100%;
-  height: 40px;
-  padding: 0 13px;
-  background: #0e131c;
+  height: 42px;
+  padding: 0 13px 0 40px;
+  background: #0b1018;
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 9px;
   outline: none;
   font-size: 12px;
+  transition: border-color 0.2s ease;
 }
 
 .statement-search input::placeholder {
-  color: var(--muted);
+  color: #65738a;
 }
 
 .statement-search input:focus {
@@ -138,25 +163,24 @@
 }
 
 .statement-filters select {
-  height: 40px;
-  min-width: 130px;
-  padding: 0 12px;
-  background: #0e131c;
+  height: 42px;
+  min-width: 145px;
+  padding: 0 32px 0 12px;
+  background: #0b1018;
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 9px;
   outline: none;
   font-size: 12px;
   cursor: pointer;
+  color-scheme: dark;
 }
 
 .statement-filters select:focus {
   border-color: var(--blue);
 }
 
-/* ================================
-   LISTA DE TRANSAÇÕES
-================================ */
+/* LISTA DE TRANSAÇÕES */
 
 .statement-list {
   display: flex;
@@ -167,34 +191,34 @@
 .statement-row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 15px 5px;
+  gap: 15px;
+  padding: 17px 5px;
   border-top: 1px solid var(--border);
   min-width: 0;
   transition: background 0.2s ease;
 }
 
 .statement-row:hover {
-  background: #ffffff05;
+  background: rgba(255, 255, 255, 0.015);
 }
 
 .statement-row .transaction-icon {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   flex-shrink: 0;
-  border-radius: 10px;
+  border-radius: 11px;
   display: grid;
   place-items: center;
 }
 
 .statement-row .transaction-icon.income {
   color: var(--green);
-  background: #17382f;
+  background: rgba(54, 201, 143, 0.13);
 }
 
 .statement-row .transaction-icon.expense {
   color: var(--red);
-  background: #3b252d;
+  background: rgba(241, 109, 120, 0.12);
 }
 
 .statement-row .transaction-description {
@@ -205,17 +229,20 @@
 .statement-row .transaction-description strong {
   display: block;
   color: var(--text);
-  font-size: 12px;
-  margin-bottom: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  overflow-wrap: anywhere;
 }
 
 .statement-row .transaction-description small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .statement-row > strong {
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 650;
   white-space: nowrap;
 }
 
@@ -227,43 +254,65 @@
   color: var(--red);
 }
 
-/* ================================
-   ESTADO VAZIO
-================================ */
+/* ESTADO VAZIO */
 
 .statement-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 45px 20px;
+  gap: 12px;
+  min-height: 230px;
+  padding: 35px 20px;
   text-align: center;
   color: var(--muted);
 }
 
-.statement-empty h3 {
+.statement-empty > svg {
+  color: #648fd2;
+  margin-bottom: 2px;
+}
+
+.statement-empty strong {
   color: var(--text);
   font-size: 14px;
-  margin-bottom: 8px;
+  font-weight: 600;
 }
 
 .statement-empty p {
+  color: var(--muted);
   font-size: 12px;
 }
 
-/* ================================
-   RESPONSIVIDADE
-================================ */
+/* RESPONSIVIDADE */
 
 @media (max-width: 1050px) {
   .statement-summary {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 650px) {
+  .statement-page {
+    padding: 4px 0 20px;
+  }
+
   .statement-summary {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .statement-card {
+    min-height: 110px;
+    padding: 19px;
+  }
+
+  .statement-card strong {
+    font-size: 19px;
+  }
+
+  .statement-panel {
+    padding: 20px 17px;
   }
 
   .statement-filters {
@@ -280,14 +329,20 @@
   }
 
   .statement-row {
-    gap: 9px;
+    gap: 10px;
+    padding: 15px 2px;
+  }
+
+  .statement-row .transaction-icon {
+    width: 37px;
+    height: 37px;
+  }
+
+  .statement-row .transaction-description strong {
+    font-size: 12px;
   }
 
   .statement-row > strong {
     font-size: 11px;
-  }
-
-  .statement-card strong {
-    font-size: 18px;
   }
 }

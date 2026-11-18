@@ -41,7 +41,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
       </div>
 
       <span className="menu-label">
-        {sidebarOpen ? "MENU PRINCIPAL" : ""}
+          {sidebarOpen ? "MENU PRINCIPAL" : ""}
       </span>
 
       <nav>

@@ -77,7 +77,7 @@ function Goals() {
       };
 
       let savedGoal;
-      
+
       // Separado de forma estrita para evitar erros de rota
       if (editingGoal && editingGoal.id) {
         savedGoal = await api.put(`/goals/${editingGoal.id}`, payload);
