@@ -1,11 +1,8 @@
-const categoryData = [
-  ["Alimentação", "R$ 850,00", "36%", "food"],
-  ["Transporte", "R$ 620,00", "26%", "transport"],
-  ["Moradia", "R$ 500,00", "21%", "home"],
-  ["Outros", "R$ 380,00", "17%", "other"],
-];
+import { formatCurrency } from "../../utils/formatCurrency";
 
-function CategoryExpenses() {
+function CategoryExpenses({ categoriesData = [] }) {
+  const totalExpenseSum = categoriesData.reduce((acc, cat) => acc + Number(cat.total || 0), 0);
+
   return (
     <article className="panel">
       <div className="panel-heading">
@@ -16,22 +13,36 @@ function CategoryExpenses() {
       </div>
 
       <div className="category-list">
-        {categoryData.map(([name, value, percent, type]) => (
-          <div className="category-row" key={name}>
-            <div className="category-info">
-              <span className={`category-dot ${type}`} />
-              <span>{name}</span>
-              <strong>{value}</strong>
-            </div>
+        {categoriesData.length === 0 ? (
+          <p>Nenhuma despesa registrada por categoria.</p>
+        ) : (
+          categoriesData.map((cat) => {
+            const percentage = totalExpenseSum > 0 ? Math.round((cat.total / totalExpenseSum) * 100) : 0;
 
-            <div className="progress-track">
-              <div
-                className={`progress-fill ${type}`}
-                style={{ width: percent }}
-              />
-            </div>
-          </div>
-        ))}
+            return (
+              <div className="category-row" key={cat.id || cat.name}>
+                <div className="category-info">
+                  <span
+                    className="category-dot"
+                    style={{ backgroundColor: cat.color || "#3b82f6" }}
+                  />
+                  <span>{cat.name}</span>
+                  <strong>{formatCurrency(cat.total)}</strong>
+                </div>
+
+                <div className="progress-track">
+                  <div
+                    className="progress-fill"
+                    style={{
+                      width: `${percentage}%`,
+                      backgroundColor: cat.color || "#3b82f6",
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </article>
   );

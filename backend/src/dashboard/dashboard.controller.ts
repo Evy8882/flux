@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { Types } from "mongoose";
-import { TransacaoModel, CategoriaModel } from "../db/models.js";
+import { TransacaoModel } from "../db/models.js";
 
 // ─── GET /api/dashboard/summary ───────────────────────────────────────────────
 
@@ -43,31 +43,22 @@ export async function getSummary(req: Request, res: Response): Promise<void> {
   const totalDespesas: number = despesasAgg[0]?.total ?? 0;
   const saldo = totalReceitas - totalDespesas;
 
-  // ── Agregação por categoria ───────────────────────────────────────────────
+  // ── Agregação por categoria (Apenas Despesas) ─────────────────────────────
   const categoryAgg = await TransacaoModel.aggregate([
-    { $match: baseFilter },
-    { $group: { _id: "$categoriaId", total: { $sum: "$valor" } } },
+    { $match: { ...baseFilter, tipo: "despesa" } }, // Filtra estritamente por despesas
+    { $group: { _id: "$categoryId", total: { $sum: "$valor" } } },
     { $sort: { total: -1 } },
   ]);
 
-  const categoryIds = categoryAgg.map((a) => a._id);
-  const categories = await CategoriaModel.find({ _id: { $in: categoryIds } });
+  const defaultColors = ["#ef4444", "#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#22c55e", "#14b8a6", "#64748b"];
 
-  const catMap = new Map(categories.map((c) => [c._id.toString(), c]));
-
-  const byCategory = categoryAgg
-    .map((a) => {
-      const cat = catMap.get(a._id.toString());
-      if (!cat) return null;
-      return {
-        id: cat._id.toString(),
-        name: cat.nome,
-        color: cat.cor,
-        icon: cat.icone,
-        total: a.total,
-      };
-    })
-    .filter(Boolean);
+  const byCategory = categoryAgg.map((a, index) => ({
+    id: a._id,
+    name: a._id || "Outros",
+    color: defaultColors[index % defaultColors.length],
+    icon: "tag",
+    total: a.total,
+  }));
 
   // ── Evolução mensal (últimos 6 meses) ─────────────────────────────────────
   const monthlyAgg = await TransacaoModel.aggregate([
