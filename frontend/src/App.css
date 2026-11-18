@@ -700,3 +700,20 @@ button {
     width: 100%;
   }
 }
+
+.auth-logo-badge {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(67, 133, 245, 0.12);
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.auth-logo-badge img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
