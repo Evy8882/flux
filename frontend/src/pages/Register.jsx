@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, ArrowRight, WalletCards } from "lucide-react";
 import logo from "../assets/logo.png";
+import { api } from "../services/api";
 
 function Register({ onLogin }) {
   const [name, setName] = useState("");
@@ -17,29 +18,13 @@ function Register({ onLogin }) {
     setError("");
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Erro ao criar conta.");
-      }
+      const data = await api.post("/auth/register", { name, email, password });
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
       setIsLoading(false);
-
-      if (onLogin) {
-        onLogin(data.user);
-      }
-
+      if (onLogin) onLogin(data.user);
       navigate("/");
     } catch (err) {
       setIsLoading(false);
@@ -62,7 +47,11 @@ function Register({ onLogin }) {
           <p>Preencha os dados abaixo para iniciar sua jornada.</p>
         </div>
 
-        {error && <div className="error-message" style={{ color: "red", marginBottom: "1rem", fontSize: "0.9rem" }}>{error}</div>}
+        {error && (
+          <div className="error-message" style={{ color: "red", marginBottom: "1rem", fontSize: "0.9rem" }}>
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
@@ -110,16 +99,6 @@ function Register({ onLogin }) {
             </div>
           </div>
 
-          <div className="login-options">
-            <label className="remember-me">
-              <input type="checkbox" />
-              <span>Lembrar de mim</span>
-            </label>
-            <a href="#forgot" onClick={(e) => e.preventDefault()} className="forgot-password">
-              Esqueceu a senha?
-            </a>
-          </div>
-
           <button type="submit" className="primary-button login-button" disabled={isLoading}>
             {isLoading ? "Criando conta..." : "Criar conta"}
             {!isLoading && <ArrowRight size={16} />}
@@ -128,8 +107,7 @@ function Register({ onLogin }) {
 
         <div className="login-footer">
           <p>
-            Já tem uma conta?{" "}
-            <Link to="/login">Entrar na conta</Link>
+            Já tem uma conta? <Link to="/login">Entrar na conta</Link>
           </p>
         </div>
       </div>

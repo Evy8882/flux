@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   TrendingUp,
   TrendingDown,
@@ -7,19 +8,46 @@ import SummaryCard from "../components/dashboard/SummaryCard";
 import FinancialChart from "../components/dashboard/FinancialChart";
 import CategoryExpenses from "../components/dashboard/CategoryExpenses";
 import RecentTransactions from "../components/dashboard/RecentTransactions";
+import { api } from "../services/api";
 
 import "./Dashboard.css";
 
-function Dashboard({ transactions, onViewAll }) {
-  const income = transactions
-    .filter((item) => item.type === "income")
-    .reduce((total, item) => total + Number(item.value), 0);
+function Dashboard({ onViewAll }) {
+  const [summary, setSummary] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const expenses = transactions
-    .filter((item) => item.type === "expense")
-    .reduce((total, item) => total + Number(item.value), 0);
+  useEffect(() => {
+    async function loadDashboardData() {
+      try {
+        // Busca o resumo consolidado do dashboard e a lista de transações em paralelo
+        const [summaryRes, transRes] = await Promise.all([
+          api.get("/dashboard/summary"),
+          api.get("/transactions"),
+        ]);
+        setSummary(summaryRes);
+        setTransactions(transRes);
+      } catch (err) {
+        console.error("Erro ao carregar dados do dashboard:", err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadDashboardData();
+  }, []);
 
-  const balance = 5700 + income - expenses;
+  if (isLoading) {
+    return (
+      <main className="dashboard">
+        <p>Carregando dashboard...</p>
+      </main>
+    );
+  }
+
+  // Extrai os totais retornados por getSummary no dashboard.controller.ts
+  const balance = summary?.saldo || 0;
+  const totalReceitas = summary?.totalReceitas || 0;
+  const totalDespesas = summary?.totalDespesas || 0;
 
   function formatCurrency(value) {
     return Number(value).toLocaleString("pt-BR", {
@@ -40,7 +68,7 @@ function Dashboard({ transactions, onViewAll }) {
 
         <SummaryCard
           title="Receitas cadastradas"
-          value={formatCurrency(income)}
+          value={formatCurrency(totalReceitas)}
           subtitle="Total de entradas"
           icon={TrendingUp}
           type="income"
@@ -48,7 +76,7 @@ function Dashboard({ transactions, onViewAll }) {
 
         <SummaryCard
           title="Despesas cadastradas"
-          value={formatCurrency(expenses)}
+          value={formatCurrency(totalDespesas)}
           subtitle="Total de saídas"
           icon={TrendingDown}
           type="expense"
@@ -56,17 +84,22 @@ function Dashboard({ transactions, onViewAll }) {
       </section>
 
       <section className="dashboard-chart">
-        <FinancialChart />
+        <FinancialChart monthlyData={summary?.monthly || []} />
       </section>
 
       <section className="dashboard-bottom">
         <div className="dashboard-categories">
-          <CategoryExpenses />
+          <CategoryExpenses categoriesData={summary?.byCategory || []} />
         </div>
 
         <div className="dashboard-transactions">
           <RecentTransactions
-            transactions={transactions}
+            transactions={transactions.map((t) => ({
+              ...t,
+              name: t.description,
+              value: t.amount,
+              type: t.type === "receita" ? "income" : "expense",
+            }))}
             onViewAll={onViewAll}
           />
         </div>

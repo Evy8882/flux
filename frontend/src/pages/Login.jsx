@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, ArrowRight, UserRound } from "lucide-react";
 import logo from "../assets/logo.png";
+import { api } from "../services/api";
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -17,27 +18,16 @@ function Login({ onLogin }) {
     setError("");
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Erro ao fazer login.");
-      }
+      const data = await api.post("/auth/login", { email, password });
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
+      setIsLoading(false);
+      if (onLogin) onLogin(data.user);
       if (onLogin) {
         onLogin(data.user);
       }
-
       navigate("/");
     } catch (err) {
       setError(err.message);
@@ -152,8 +142,7 @@ function Login({ onLogin }) {
 
         <div className="login-footer">
           <p>
-            Não tem uma conta?{" "}
-            <Link to="/register">Criar conta gratuita</Link>
+            Não tem uma conta? <Link to="/register">Criar conta gratuita</Link>
           </p>
         </div>
       </div>
